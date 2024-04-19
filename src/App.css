@@ -1,0 +1,49 @@
+@font-face {
+  font-family: 'Avenir Next';
+  src: url('/fonts/AvenirNext-Regular.ttf');
+  font-weight: 300;
+}
+
+@font-face {
+  font-family: 'Avenir Next';
+  src: url('/fonts/AvenirNext-Medium.ttf');
+  font-weight: 600;
+}
+
+@font-face {
+  font-family: 'Avenir Next';
+  src: url('/fonts/AvenirNext-Bold.ttf');
+  font-weight: 700;
+}
+
+@font-face {
+  font-family: 'Yatra One';
+  src: url('/fonts/YatraOne-Regular.ttf');
+  font-weight: 300;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-width: 280px;
+  overflow-x: hidden;
+  font-family: 'Avenir Next', sans-serif;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+.vertical-text {
+  writing-mode: vertical-rl;
+  text-orientation: sideways;
+}
+
+.section-title {
+  font-family: 'Yatra One', sans-serif;
+}
