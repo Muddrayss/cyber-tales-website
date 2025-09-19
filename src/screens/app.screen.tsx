@@ -1,13 +1,14 @@
 import React, { useContext } from 'react';
-import { GooglePlayButton, AppStoreButton } from 'react-mobile-app-button';
+import { GooglePlayButton } from 'react-mobile-app-button';
 
 import { NavbarContext } from '../contexts/navbar.context';
 
 const AppScreen: React.FC = () => {
   const { navbarHeight } = useContext(NavbarContext);
 
-  const APKUrl = '#';
-  const iOSUrl = '#';
+  const APKUrl =
+    'https://docs.google.com/uc?export=download&id=1ZcsR75KkD1Lx4DLnS7wFl3hRhBXigirs';
+  // const iOSUrl = '#';
 
   return (
     <section
@@ -30,12 +31,12 @@ const AppScreen: React.FC = () => {
           height={70}
           className='bg-secondary border-secondary-light'
         />
-        <AppStoreButton
+        {/* <AppStoreButton
           url={iOSUrl}
           theme={'dark'}
           height={70}
           className='bg-secondary border-secondary-light'
-        />
+        /> */}
       </div>
     </section>
   );

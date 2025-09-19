@@ -14,27 +14,32 @@ export const CreditsData: CreditsDataType[] = [
       },
       {
         role: 'Developer',
-        name: ['TBD'],
+        name: ['Andrea Rostro'],
       },
       {
         role: 'UI/UX Designer',
-        name: ['Ennio Gualandi', 'TBD'],
+        name: ['Ennio Gualandi'],
       },
       {
         role: 'Content Creator',
-        name: ['TBD'],
+        name: [
+          'Ennio Gualandi',
+          'Paolo Profeti',
+          'Andrea Rostro',
+          'Alessandro Cargiolli',
+        ],
       },
       {
         role: 'Music Composer',
-        name: ['TBD'],
+        name: ['Samuele Fiorini', 'Mattia Covelli'],
       },
       {
         role: 'Editor',
-        name: ['Ennio Gualandi', 'TBD'],
+        name: ['Ennio Gualandi', 'Andrea Rostro'],
       },
       {
         role: 'Tester',
-        name: ['TBD'],
+        name: ['Alessandro Cargiolli', 'Andrea Rostro'],
       },
     ],
   },
@@ -51,19 +56,24 @@ export const CreditsData: CreditsDataType[] = [
       },
       {
         role: 'Developer',
-        name: ['TBD'],
+        name: ['Paolo Profeti', 'Alessandro Cargiolli', 'Andrea Rostro'],
       },
       {
         role: 'UI/UX Designer',
-        name: ['Ennio Gualandi', 'TBD'],
-      },
-      {
-        role: 'Content Creator',
         name: ['Ennio Gualandi'],
       },
       {
+        role: 'Content Creator',
+        name: [
+          'Ennio Gualandi',
+          'Paolo Profeti',
+          'Alessandro Cargiolli',
+          'Andrea Rostro',
+        ],
+      },
+      {
         role: 'Tester',
-        name: ['TBD'],
+        name: ['Alessandro Cargiolli'],
       },
     ],
   },
@@ -80,7 +90,7 @@ export const CreditsData: CreditsDataType[] = [
       },
       {
         role: 'Editor',
-        name: ['Ennio Gualandi'],
+        name: ['Suno AI'],
       },
       {
         role: 'Quality Checker',
@@ -89,27 +99,23 @@ export const CreditsData: CreditsDataType[] = [
     ],
   },
   {
-    project: 'TikTok',
+    project: 'Instagram',
     roles: [
       {
         role: 'Project Manager',
-        name: ['Federico Pavoni'],
+        name: ['Alessandro Cargiolli'],
       },
       {
         role: 'Content Creator',
-        name: ['TBD'],
+        name: ['Alessandro Cargiolli', 'Paolo Profeti'],
       },
       {
         role: 'Editor',
-        name: ['TBD'],
-      },
-      {
-        role: 'Music Manager',
-        name: ['TBD'],
+        name: ['Ennio Gualandi', 'Alessandro Cargiolli'],
       },
       {
         role: 'Quality Checker',
-        name: ['TBD'],
+        name: ['Ennio Gualandi'],
       },
     ],
   },
