@@ -5,8 +5,9 @@ import { NavbarContext } from '../contexts/navbar.context';
 import {
   PATH_HOME,
   PATH_APP,
+  PATH_MANUAL,
   PATH_MUSIC,
-  PATH_TIKTOK,
+  PATH_INSTAGRAM,
   PATH_CREDITS,
 } from '../utils/navigate.utils';
 
@@ -41,8 +42,9 @@ const Header: React.FC = () => {
   const navigation = [
     { content: 'Home', path: PATH_HOME },
     { content: 'App', path: PATH_APP },
+    { content: 'Manuale', path: PATH_MANUAL },
     { content: 'Musica', path: PATH_MUSIC },
-    { content: 'TikTok', path: PATH_TIKTOK },
+    { content: 'Instagram', path: PATH_INSTAGRAM },
     { content: 'Crediti', path: PATH_CREDITS },
   ];
 

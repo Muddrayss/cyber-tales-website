@@ -42,7 +42,7 @@ const Home: React.FC = () => {
       />
       <HomeSection
         title='Molto più di una semplice app!'
-        paragraph="Oltre all’app, stiamo creando una community. Dai un'occhiata alla nostra sezione Musica per brani che risuonano con i temi della sicurezza digitale e non perdere la nostra pagina TikTok in cui suddividiamo argomenti complessi sulla sicurezza informatica in clip facili da digerire. Ogni piattaforma è un'estensione del nostro impegno volto a sensibilizzare ed educare sull'importanza della sicurezza informatica."
+        paragraph="Oltre all’app, stiamo creando una community. Dai un'occhiata alla nostra sezione Musica per brani che risuonano con i temi della sicurezza digitale e non perdere la nostra pagina Instagram in cui suddividiamo argomenti complessi sulla sicurezza informatica in clip facili da digerire. Ogni piattaforma è un'estensione del nostro impegno volto a sensibilizzare ed educare sull'importanza della sicurezza informatica."
         src={`${
           import.meta.env.VITE_PUBLIC_URL
         }images/cyber_security/cyber_security_img003.jpg`}
