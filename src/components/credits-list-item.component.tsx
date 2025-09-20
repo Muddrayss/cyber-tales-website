@@ -1,18 +1,20 @@
 import React from 'react';
-
 import { CreditsDataType } from '../types/credits.type';
 
 const CreditsListItem: React.FC<CreditsDataType> = (props) => {
   return (
-    <div className='flex flex-col gap-6 items-center justify-center text-center bg-primary bg-opacity-50 rounded-md p-6 w-full'>
-      <h2 className='text-4xl font-bold text-highlight'>{props.project}</h2>
-      <ul className='list-none'>
+    <div className='rounded-2xl bg-white/5 p-6 ring-1 ring-white/10'>
+      <h2 className='text-xl md:text-2xl font-bold text-highlight'>
+        {props.project}
+      </h2>
+
+      <ul className='mt-4 space-y-5'>
         {props.roles.map((role, index) => (
-          <li key={index} className='mt-6'>
-            <h3 className='text-2xl font-semibold'>{role.role}</h3>
-            <ul className='text-xl text-gray-300 mt-3'>
-              {role.name.map((name, index) => (
-                <li key={index}>{name}</li>
+          <li key={index}>
+            <h3 className='text-sm md:text-base font-semibold'>{role.role}</h3>
+            <ul className='mt-2 space-y-1 text-sm md:text-base text-white/80'>
+              {role.name.map((name, i) => (
+                <li key={i}>{name}</li>
               ))}
             </ul>
           </li>

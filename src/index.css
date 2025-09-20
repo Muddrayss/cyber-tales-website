@@ -3,6 +3,26 @@
 @tailwind utilities;
 
 @layer components {
+  .main-container {
+    @apply relative min-h-[100dvh] pb-20 overflow-hidden bg-[#0b1020] bg-opacity-90 text-white;
+  }
+
+  .main-title {
+    @apply text-balance text-4xl font-extrabold leading-tight tracking-tight md:text-6xl;
+  }
+
+  .main-paragraph {
+    @apply mt-4 max-w-prose text-pretty text-base text-white/80 md:text-lg;
+  }
+
+  .main-title-gradient {
+    @apply bg-gradient-to-r from-cyan-300 via-fuchsia-300 to-amber-300 bg-clip-text text-transparent;
+  }
+
+  .secondary-title-gradient {
+    @apply bg-gradient-to-r from-[#84ffc9] via-[#aab2ff] to-[#eca0ff] bg-clip-text text-transparent;
+  }
+
   .section-container {
     @apply relative items-center px-4 max-w-screen-xl mx-auto md:flex md:px-8 text-on-primary;
   }
