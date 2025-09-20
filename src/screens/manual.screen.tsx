@@ -1,440 +1,417 @@
-import React, { useContext } from 'react';
-
+// src/screens/manual.screen.tsx
+import React, { useContext, useMemo, useEffect } from 'react';
 import { NavbarContext } from '../contexts/navbar.context';
+
+type TocItem = { id: string; title: string };
+
+function Section({
+  id,
+  title,
+  navbarHeight,
+  children,
+}: {
+  id: string;
+  title: string;
+  navbarHeight: number;
+  children: React.ReactNode;
+}) {
+  return (
+    <article
+      id={id}
+      // scroll-margin per non far "finire" i titoli sotto la navbar
+      style={{ scrollMarginTop: navbarHeight + 24 }}
+      className='rounded-3xl bg-white/5 p-6 ring-1 ring-white/10'
+    >
+      <h2 className='text-xl md:text-2xl font-bold'>{title}</h2>
+      <div className='mt-2 space-y-3 text-sm md:text-base text-white/80'>
+        {children}
+      </div>
+    </article>
+  );
+}
+
+function SubSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className='mt-3'>
+      <h3 className='text-base font-semibold'>{title}</h3>
+      <div className='mt-1 space-y-2 text-sm md:text-base text-white/80'>
+        {children}
+      </div>
+    </div>
+  );
+}
 
 const ManualScreen: React.FC = () => {
   const { navbarHeight } = useContext(NavbarContext);
 
-  // const sections = [
-  //   { id: 'introduction', title: 'Introduzione' },
-  //   { id: 'phishing', title: 'Phishing' },
-  //   { id: 'https', title: 'Navigazione Sicura (HTTPS)' },
-  //   { id: 'password', title: 'Password' },
-  //   { id: '2fa', title: 'Autenticazione a Due Fattori (2FA)' },
-  //   { id: 'malware', title: 'Malware' },
-  //   { id: 'antivirus', title: 'Antivirus e Firewall' },
-  //   { id: 'social-engineering', title: 'Ingegneria Sociale' },
-  //   { id: 'deep-web', title: 'Deep Web e Dark Web' },
-  // ];
+  useEffect(() => {
+    document.documentElement.style.setProperty(
+      '--nav-offset',
+      `${navbarHeight + 16}px`
+    );
+  }, [navbarHeight]);
+
+  const toc: TocItem[] = useMemo(
+    () => [
+      { id: 'introduzione', title: 'Introduzione' },
+      { id: 'phishing', title: 'Phishing' },
+      { id: 'https', title: 'Navigazione sicura (HTTPS)' },
+      { id: 'password', title: 'Password' },
+      { id: '2fa', title: 'Autenticazione a due fattori (2FA)' },
+      { id: 'malware', title: 'Malware' },
+      { id: 'antivirus-firewall', title: 'Antivirus & Firewall' },
+      { id: 'social-engineering', title: 'Ingegneria sociale' },
+      { id: 'deep-dark-web', title: 'Deep Web & Dark Web' },
+    ],
+    []
+  );
 
   return (
-    <section
-      className='section-container w-full flex flex-col gap-8 mb-12'
+    <main
+      className='main-container text-white overflow-visible'
       style={{ marginTop: navbarHeight }}
     >
-      <h1 className='section-title text-center self-center'>Manuale</h1>
-      <div className='flex flex-col items-center gap-8 w-full h-full p-4'>
-        {/* <div className='p-4 shadow-lg z-10'>
-          <ul className='flex flex-col justify-center gap-4 mt-4'>
-            {sections.map((section) => (
-              <li key={section.id}>
-                <a
-                  href={`#${section.id}`}
-                  className='text-blue-500 hover:underline'
-                >
-                  {section.title}
-                </a>
-              </li>
+      {/* Intro page header */}
+      <section className='mx-auto max-w-7xl px-6 pb-8 pt-4 md:pb-10 md:pt-8'>
+        <h1 className='main-title'>
+          Leggi il nostro&nbsp;
+          <br />
+          <span className='main-title-gradient'>
+            Manuale sulla Cybersicurezza
+          </span>
+        </h1>
+        <p className='main-paragraph'>
+          Riassunti chiari per ripassare i concetti di cybersicurezza visti in
+          minigiochi e storie. Poca teoria, tanta pratica.
+        </p>
+      </section>
+
+      {/* Layout con TOC a sinistra (sticky su md+) e contenuti a destra */}
+      <section className='mx-auto grid max-w-7xl grid-cols-1 gap-6 px-6 md:grid-cols-[260px_1fr]'>
+        {/* TOC desktop */}
+        <aside className='sticky top-[calc(var(--nav-offset,0px))] hidden self-start md:block'>
+          <nav
+            aria-label='Indice manuale'
+            className='rounded-2xl bg-white/5 p-3 ring-1 ring-white/10'
+          >
+            <p className='px-2 pb-2 text-xs text-white/70'>Indice</p>
+            <ul className='space-y-1 text-sm'>
+              {toc.map((item) => (
+                <li key={item.id}>
+                  <a
+                    href={`#${item.id}`}
+                    className='block rounded-lg px-2 py-1 hover:bg-white/10'
+                  >
+                    {item.title}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </aside>
+
+        {/* TOC mobile */}
+        <div className='md:hidden'>
+          <nav
+            aria-label='Indice manuale'
+            className='no-scrollbar -mx-2 flex gap-2 overflow-x-auto px-2 pb-2'
+          >
+            {toc.map((item) => (
+              <a
+                key={item.id}
+                href={`#${item.id}`}
+                className='whitespace-nowrap rounded-full bg-white/10 px-3 py-1 text-xs font-semibold ring-1 ring-white/15'
+              >
+                {item.title}
+              </a>
             ))}
-          </ul>
-        </div> */}
-        <div className='w-full max-w-4xl'>
-          <Section id='introduction' title='Introduzione'>
+          </nav>
+        </div>
+
+        {/* Contenuti */}
+        <div className='flex flex-col gap-6'>
+          <Section
+            id='introduzione'
+            title='Introduzione'
+            navbarHeight={navbarHeight}
+          >
             <p>
-              Benvenuto nel manuale di sicurezza online! Questo documento è
-              pensato per riassumere e approfondire i concetti che hai appreso
-              attraverso l'app. La sicurezza online è fondamentale per
-              proteggere le tue informazioni personali e mantenere un'esperienza
-              sicura sul web. Esploriamo insieme i principali argomenti trattati
-              nel gioco.
+              Benvenuto nel manuale di sicurezza online! Qui trovi i concetti
+              chiave che hai incontrato nell’app e nei minigiochi, organizzati
+              per argomenti e con consigli pratici da mettere subito in atto.
             </p>
           </Section>
-          <Section id='phishing' title='Phishing'>
-            <SubSection title="Cos'è il Phishing?">
+
+          <Section id='phishing' title='Phishing' navbarHeight={navbarHeight}>
+            <SubSection title='Cos’è il phishing?'>
               <p>
-                Il phishing è una tecnica utilizzata dai criminali informatici
-                per ingannarti e farti rivelare informazioni personali come
-                password, numeri di carte di credito o altri dati sensibili.
-                Questi attacchi avvengono spesso tramite email, messaggi di
-                testo o siti web falsi che sembrano legittimi.
+                Tecniche per ingannarti e farti rivelare dati sensibili
+                (password, carte, ecc.). Arrivano via email, SMS o siti falsi
+                che imitano quelli legittimi.
               </p>
             </SubSection>
-            <SubSection title='Come riconoscerlo?'>
-              <ul className='list-disc ml-5'>
+            <SubSection title='Come riconoscerlo'>
+              <ul className='list-disc pl-5'>
                 <li>
-                  <strong>Email sospette:</strong> Controlla l'indirizzo del
-                  mittente; spesso è simile ma non identico a un'azienda
-                  legittima.
+                  <strong>Mittente sospetto:</strong> indirizzo simile ma non
+                  identico al vero.
                 </li>
                 <li>
-                  <strong>Errori grammaticali:</strong> Le email di phishing
-                  spesso contengono errori grammaticali o di ortografia.
+                  <strong>Errori evidenti:</strong> grammatica e tono
+                  incoerenti.
                 </li>
                 <li>
-                  <strong>Link e allegati:</strong> Non cliccare su link o
-                  scaricare allegati da fonti sconosciute.
+                  <strong>Link/Allegati:</strong> evita click e download non
+                  richiesti.
                 </li>
                 <li>
-                  <strong>Richieste urgenti:</strong> Diffida di email che
-                  richiedono azioni immediate, come aggiornare una password o
-                  confermare informazioni personali.
+                  <strong>Urgenza artificiale:</strong> “subito o perdi
+                  l’account”.
                 </li>
               </ul>
             </SubSection>
             <SubSection title='Prevenzione'>
-              <ul className='list-disc ml-5'>
+              <ul className='list-disc pl-5'>
                 <li>
-                  <strong>Verifica l'indirizzo:</strong> Controlla l'indirizzo
-                  email del mittente per assicurarti che sia legittimo.
+                  <strong>Verifica:</strong> contatta la fonte ufficiale da
+                  canali indipendenti.
                 </li>
                 <li>
-                  <strong>Non cliccare:</strong> Non cliccare su link o
-                  scaricare allegati da email sospette.
+                  <strong>Non cliccare:</strong> apri l’area clienti da URL
+                  digitato a mano.
                 </li>
                 <li>
-                  <strong>Contatta l'azienda:</strong> Se ricevi una richiesta
-                  sospetta, contatta direttamente l'azienda per verificare
-                  l'autenticità dell'email.
-                </li>
-                <li>
-                  <strong>Usa software di sicurezza:</strong> Antivirus e filtri
-                  anti-phishing possono aiutarti a identificare email e siti web
-                  pericolosi.
+                  <strong>Filtri anti-phishing:</strong> aiutano a bloccare
+                  messaggi e siti pericolosi.
                 </li>
               </ul>
             </SubSection>
           </Section>
-          <Section id='https' title='Navigazione Sicura (HTTPS)'>
-            <SubSection title="Cos'è HTTPS?">
+
+          <Section
+            id='https'
+            title='Navigazione sicura (HTTPS)'
+            navbarHeight={navbarHeight}
+          >
+            <SubSection title='Cos’è HTTPS?'>
               <p>
-                HTTPS è un protocollo di comunicazione che protegge i dati
-                scambiati tra il tuo browser e il sito web che stai visitando.
-                L'utilizzo di HTTPS garantisce che le informazioni trasmesse
-                siano crittografate e protette da accessi non autorizzati.
+                Protocollo che cifra i dati tra browser e sito, riducendo il
+                rischio di intercettazioni e manomissioni.
               </p>
             </SubSection>
-            <SubSection title='Perché è importante?'>
-              <ul className='list-disc ml-5'>
+            <SubSection title='Perché è importante'>
+              <ul className='list-disc pl-5'>
                 <li>
-                  <strong>Protezione dei dati:</strong> HTTPS protegge i tuoi
-                  dati personali da accessi non autorizzati.
+                  <strong>Protezione dati:</strong> riduce accessi non
+                  autorizzati.
                 </li>
                 <li>
-                  <strong>Autenticità del sito:</strong> La presenza di HTTPS
-                  indica che il sito è autentico e sicuro.
+                  <strong>Autenticità:</strong> aiuta a riconoscere siti
+                  legittimi.
                 </li>
                 <li>
-                  <strong>Integrità delle informazioni:</strong> HTTPS
-                  garantisce che le informazioni trasmesse non siano state
-                  modificate durante il trasferimento.
+                  <strong>Integrità:</strong> evita che le info vengano alterate
+                  in transito.
                 </li>
               </ul>
             </SubSection>
-            <SubSection title='Come riconoscere un sito sicuro?'>
-              <ul className='list-disc ml-5'>
+            <SubSection title='Come riconoscere un sito sicuro'>
+              <ul className='list-disc pl-5'>
                 <li>
-                  <strong>URL:</strong> Verifica che l'URL inizi con "https://"
-                  anziché "http://".
+                  URL che inizia con <code>https://</code>.
+                </li>
+                <li>Icona del lucchetto nella barra degli indirizzi.</li>
+                <li>Certificato valido (verificabile dal lucchetto).</li>
+              </ul>
+            </SubSection>
+          </Section>
+
+          <Section id='password' title='Password' navbarHeight={navbarHeight}>
+            <SubSection title='Creare password robuste'>
+              <ul className='list-disc pl-5'>
+                <li>
+                  <strong>Lunghezza:</strong> preferisci passphrase (3–4 parole
+                  non correlate).
                 </li>
                 <li>
-                  <strong>Lucchetto:</strong> Controlla la presenza di un
-                  lucchetto nella barra degli indirizzi.
+                  <strong>Varietà:</strong> lettere maiuscole/minuscole, numeri
+                  e simboli quando ha senso.
                 </li>
                 <li>
-                  <strong>Certificato SSL:</strong> Clicca sul lucchetto per
-                  visualizzare il certificato SSL del sito.
+                  <strong>Unicità:</strong> una password diversa per ogni sito.
+                </li>
+              </ul>
+            </SubSection>
+            <SubSection title='Gestione'>
+              <ul className='list-disc pl-5'>
+                <li>
+                  <strong>Password manager:</strong> memorizza in modo sicuro e
+                  genera credenziali forti.
+                </li>
+                <li>
+                  <strong>Aggiornamenti mirati:</strong> cambia subito dopo
+                  violazioni o condivisioni sospette.
                 </li>
               </ul>
             </SubSection>
           </Section>
-          <Section id='password' title='Password'>
-            <SubSection title='Come creare una password sicura?'>
+
+          <Section
+            id='2fa'
+            title='Autenticazione a due fattori (2FA)'
+            navbarHeight={navbarHeight}
+          >
+            <SubSection title='Cos’è'>
               <p>
-                Una password sicura è fondamentale per proteggere i tuoi account
-                online. Ecco alcuni consigli per creare una password forte:
+                Un secondo fattore oltre la password (codice, app, chiave
+                fisica) che blocca accessi non autorizzati anche se la password
+                è conosciuta.
               </p>
-              <ul className='list-disc ml-5'>
+            </SubSection>
+            <SubSection title='Vantaggi'>
+              <ul className='list-disc pl-5'>
                 <li>
-                  <strong>Lunghezza:</strong> Usa almeno 8-12 caratteri per la
-                  tua password.
+                  Sicurezza aggiuntiva contro phishing e furti credenziali.
                 </li>
-                <li>
-                  <strong>Complessità:</strong> Usa una combinazione di lettere
-                  maiuscole e minuscole, numeri e simboli.
-                </li>
-                <li>
-                  <strong>Unicità:</strong> Usa password diverse per ogni
-                  account online.
-                </li>
+                <li>Facile da configurare su molti servizi.</li>
               </ul>
             </SubSection>
-            <SubSection title='Gestione delle password'>
-              <p>
-                Gestire le tue password in modo sicuro è essenziale per
-                proteggere i tuoi account online. Ecco alcuni suggerimenti per
-                una corretta gestione delle password:
-              </p>
-              <ul className='list-disc ml-5'>
+            <SubSection title='Come attivarla'>
+              <ul className='list-disc pl-5'>
+                <li>Apri le impostazioni di sicurezza del servizio.</li>
                 <li>
-                  <strong>Password Manager:</strong> Utilizza un gestore di
-                  password per memorizzare e proteggere le tue password.
+                  Scegli SMS, app autenticatore o chiave hardware (preferibile).
                 </li>
-                <li>
-                  <strong>Cambia le password regolarmente:</strong> Aggiorna le
-                  tue password periodicamente per proteggere i tuoi account.
-                </li>
+                <li>Salva i codici di backup in luogo sicuro.</li>
               </ul>
             </SubSection>
           </Section>
-          <Section id='2fa' title='Autenticazione a Due Fattori (2FA)'>
-            <SubSection title="Cos'è l'autenticazione a due fattori?">
+
+          <Section id='malware' title='Malware' navbarHeight={navbarHeight}>
+            <SubSection title='Cos’è'>
               <p>
-                L'autenticazione a due fattori è un metodo di sicurezza che
-                richiede due forme di verifica per accedere a un account online.
-                Oltre alla password, è necessario un secondo fattore come un
-                codice inviato via SMS o generato da un'applicazione.
+                Software dannoso progettato per danneggiare o rubare dati:
+                virus, worm, trojan, ransomware, spyware, e altro.
               </p>
             </SubSection>
-            <SubSection title='Vantaggi della 2FA'>
-              <ul className='list-disc ml-5'>
+            <SubSection title='Tipi comuni'>
+              <ul className='list-disc pl-5'>
                 <li>
-                  <strong>Sicurezza aggiuntiva:</strong> La 2FA protegge il tuo
-                  account anche se la tua password viene compromessa.
+                  <strong>Virus:</strong> infettano file ed eseguibili.
                 </li>
                 <li>
-                  <strong>Facilità d'uso:</strong> La 2FA è facile da
-                  configurare e utilizzare per proteggere i tuoi account.
+                  <strong>Worm:</strong> si replicano via rete.
                 </li>
                 <li>
-                  <strong>Protezione dai phishing:</strong> La 2FA previene gli
-                  attacchi di phishing e l'accesso non autorizzato.
+                  <strong>Trojan:</strong> si mascherano da software legittimo.
+                </li>
+                <li>
+                  <strong>Ransomware:</strong> cifrano i dati chiedendo
+                  riscatto.
+                </li>
+                <li>
+                  <strong>Spyware:</strong> spiano attività e rubano info.
                 </li>
               </ul>
             </SubSection>
-            <SubSection title='Come attivare la 2FA?'>
-              <p>
-                Per attivare l'autenticazione a due fattori, segui questi
-                passaggi:
-              </p>
-              <ul className='list-disc ml-5'>
-                <li>
-                  <strong>Impostazioni account:</strong> Accedi alle
-                  impostazioni del tuo account online.
-                </li>
-                <li>
-                  <strong>Attiva la 2FA:</strong> Cerca l'opzione per attivare
-                  la 2FA e segui le istruzioni.
-                </li>
-                <li>
-                  <strong>Configura il secondo fattore:</strong> Scegli tra
-                  codice SMS, app autenticatore o chiave di sicurezza.
-                </li>
+            <SubSection title='Prevenzione'>
+              <ul className='list-disc pl-5'>
+                <li>Antivirus aggiornato e scansioni periodiche.</li>
+                <li>Sistema e app sempre aggiornati.</li>
+                <li>Scarica solo da fonti affidabili.</li>
+                <li>Backup regolari dei dati importanti.</li>
               </ul>
             </SubSection>
           </Section>
-          <Section id='malware' title='Malware'>
-            <SubSection title="Cos'è il malware?">
+
+          <Section
+            id='antivirus-firewall'
+            title='Antivirus & Firewall'
+            navbarHeight={navbarHeight}
+          >
+            <SubSection title='Antivirus'>
               <p>
-                Il malware è un software dannoso progettato per danneggiare,
-                controllare o rubare informazioni dal tuo dispositivo. Esistono
-                diversi tipi di malware, come virus, worm, trojan, ransomware e
-                spyware.
+                Rileva e rimuove malware; monitora in tempo reale file e
+                download.
               </p>
             </SubSection>
-            <SubSection title='Tipi di malware'>
-              <ul className='list-disc ml-5'>
-                <li>
-                  <strong>Virus:</strong> Si diffondono infettando file
-                  eseguibili e danneggiando il sistema operativo.
-                </li>
-                <li>
-                  <strong>Worm:</strong> Si replicano e diffondono autonomamente
-                  attraverso reti e dispositivi.
-                </li>
-                <li>
-                  <strong>Trojan:</strong> Si presentano come software legittimo
-                  ma contengono funzionalità dannose.
-                </li>
-                <li>
-                  <strong>Ransomware:</strong> Bloccano i tuoi file e richiedono
-                  un riscatto per ripristinarli.
-                </li>
-                <li>
-                  <strong>Spyware:</strong> Monitorano le tue attività online e
-                  rubano informazioni personali.
-                </li>
-              </ul>
+            <SubSection title='Firewall'>
+              <p>
+                Controlla il traffico di rete in entrata/uscita e blocca
+                connessioni non autorizzate.
+              </p>
             </SubSection>
-            <SubSection title='Come proteggerti dal malware'>
-              <ul className='list-disc ml-5'>
-                <li>
-                  <strong>Software antivirus:</strong> Utilizza un software
-                  antivirus per rilevare e rimuovere il malware.
-                </li>
-                <li>
-                  <strong>Aggiornamenti software:</strong> Mantieni aggiornati
-                  il sistema operativo e le applicazioni per proteggerti dalle
-                  vulnerabilità.
-                </li>
-                <li>
-                  <strong>Download sicuri:</strong> Scarica software solo da
-                  fonti affidabili e verificate.
-                </li>
-                <li>
-                  <strong>Backup regolari:</strong> Esegui regolarmente il
-                  backup dei tuoi file per proteggerli da perdite.
-                </li>
+            <SubSection title='Perché servono entrambi'>
+              <ul className='list-disc pl-5'>
+                <li>Protezione da minacce note e comportamenti sospetti.</li>
+                <li>Barriera di rete + controllo a livello di file/app.</li>
               </ul>
             </SubSection>
           </Section>
-          <Section id='antivirus' title='Antivirus e Firewall'>
-            <SubSection title="Cos'è un antivirus?">
+
+          <Section
+            id='social-engineering'
+            title='Ingegneria sociale'
+            navbarHeight={navbarHeight}
+          >
+            <SubSection title='Cos’è'>
               <p>
-                Un antivirus è un software progettato per rilevare, prevenire e
-                rimuovere virus e malware dal tuo dispositivo. Protegge il tuo
-                sistema operativo e i tuoi dati da minacce informatiche dannose.
-              </p>
-            </SubSection>
-            <SubSection title="Cos'è un firewall?">
-              <p>
-                Un firewall è un sistema di sicurezza che monitora e controlla
-                il traffico di rete in entrata e in uscita dal tuo dispositivo.
-                Blocca le connessioni non autorizzate e previene gli attacchi
-                informatici.
-              </p>
-            </SubSection>
-            <SubSection title='Importanza'>
-              <ul className='list-disc ml-5'>
-                <li>
-                  <strong>Protezione dai malware:</strong> Un antivirus protegge
-                  il tuo dispositivo da virus e minacce online.
-                </li>
-                <li>
-                  <strong>Sicurezza della rete:</strong> Un firewall previene
-                  gli accessi non autorizzati alla tua rete.
-                </li>
-                <li>
-                  <strong>Privacy e protezione:</strong> Antivirus e firewall
-                  proteggono la tua privacy e i tuoi dati sensibili.
-                </li>
-              </ul>
-            </SubSection>
-          </Section>
-          <Section id='social-engineering' title='Ingegneria Sociale'>
-            <SubSection title="Cos'è l'ingegneria sociale?">
-              <p>
-                L'ingegneria sociale è una tecnica utilizzata per manipolare le
-                persone e ottenere informazioni riservate o accesso non
-                autorizzato a sistemi informatici. Gli attaccanti sfruttano la
-                fiducia, la curiosità o la paura per ottenere ciò che vogliono.
+                Manipolazione psicologica per ottenere informazioni o accessi:
+                sfrutta fiducia, paura o curiosità.
               </p>
             </SubSection>
             <SubSection title='Tecniche comuni'>
-              <ul className='list-disc ml-5'>
-                <li>
-                  <strong>Phishing:</strong> Gli attaccanti inviano email o
-                  messaggi falsi per ottenere informazioni personali.
-                </li>
-                <li>
-                  <strong>Pretesti:</strong> Si presentano come persone fidate o
-                  autorità per ottenere accesso ai sistemi.
-                </li>
-                <li>
-                  <strong>Inganno telefonico:</strong> Chiamano le vittime
-                  fingendo di essere tecnici o dipendenti di aziende.
-                </li>
-                <li>
-                  <strong>Social engineering online:</strong> Utilizzano i
-                  social media per raccogliere informazioni su di te.
-                </li>
+              <ul className='list-disc pl-5'>
+                <li>Phishing (email/SMS/DM falsi).</li>
+                <li>Pretexting (fingersi tecnici/autorità).</li>
+                <li>Vishing (telefonate ingannevoli).</li>
+                <li>Raccolta info dai social per attacchi mirati.</li>
               </ul>
             </SubSection>
-            <SubSection title='Come difendersi'>
-              <ul className='list-disc ml-5'>
-                <li>
-                  <strong>Consapevolezza:</strong> Sii consapevole delle
-                  tecniche di ingegneria sociale e diffida delle richieste
-                  sospette.
-                </li>
-                <li>
-                  <strong>Verifica l'identità:</strong> Verifica l'identità
-                  delle persone prima di condividere informazioni riservate.
-                </li>
-                <li>
-                  <strong>Formazione:</strong> Formati sulla sicurezza
-                  informatica e le tecniche di ingegneria sociale.
-                </li>
-                <li>
-                  <strong>Segnalazione:</strong> Segnala tentativi di ingegneria
-                  sociale alle autorità competenti.
-                </li>
+            <SubSection title='Difese'>
+              <ul className='list-disc pl-5'>
+                <li>Verifica identità e richieste fuori canale.</li>
+                <li>Formazione continua e segnalazioni interne.</li>
               </ul>
             </SubSection>
           </Section>
-          <Section id='deep-web' title='Deep Web e Dark Web'>
-            <SubSection title="Cos'è il Deep Web?">
-              <p>
-                Il Deep Web è la parte nascosta e non indicizzata del web, non
-                accessibile tramite i motori di ricerca convenzionali. Contiene
-                informazioni e risorse non disponibili al pubblico generale.
-              </p>
-            </SubSection>
-            <SubSection title="Cos'è il Dark Web?">
-              <p>
-                Il Dark Web è una parte del Deep Web che ospita contenuti
-                illegali, mercati neri, attività criminali e servizi anonimi. È
-                accessibile solo tramite software specifici come Tor.
-              </p>
-            </SubSection>
-            <SubSection title='Differenze'>
-              <ul className='list-disc ml-5'>
+
+          <Section
+            id='deep-dark-web'
+            title='Deep Web & Dark Web'
+            navbarHeight={navbarHeight}
+          >
+            <SubSection title='Definizioni rapide'>
+              <ul className='list-disc pl-5'>
                 <li>
-                  <strong>Accesso:</strong> Il Deep Web è accessibile a tutti,
-                  mentre il Dark Web richiede software specifici.
+                  <strong>Deep Web:</strong> contenuti non indicizzati (es.
+                  intranet, home banking).
                 </li>
                 <li>
-                  <strong>Contenuti:</strong> Il Deep Web contiene informazioni
-                  private, il Dark Web ospita attività illegali.
+                  <strong>Dark Web:</strong> porzione accessibile con software
+                  dedicati (es. Tor), può ospitare attività illegali.
                 </li>
+              </ul>
+            </SubSection>
+            <SubSection title='Avvertenze'>
+              <ul className='list-disc pl-5'>
+                <li>Rischi legali e di sicurezza elevati.</li>
                 <li>
-                  <strong>Anonimato:</strong> Il Deep Web garantisce la privacy,
-                  il Dark Web offre l'anonimato completo.
+                  Non accedere senza consapevolezza e protezioni adeguate.
                 </li>
               </ul>
             </SubSection>
           </Section>
         </div>
-      </div>
-    </section>
+      </section>
+    </main>
   );
 };
-
-type SectionProps = {
-  id: string;
-  title: string;
-  children: React.ReactNode;
-};
-
-const Section = ({ id, title, children }: SectionProps) => (
-  <div id={id} className='my-8 w-full'>
-    <h2 className='text-xl font-bold text-red-600 uppercase underline'>
-      {title}
-    </h2>
-    {children}
-    <hr className='border-t border-gray-300 my-4' />
-  </div>
-);
-
-type SubSectionProps = {
-  title: string;
-  children: React.ReactNode;
-};
-
-const SubSection = ({ title, children }: SubSectionProps) => (
-  <div className='my-4'>
-    <h3 className='text-lg font-semibold text-orange-500'>{title}</h3>
-    {children}
-  </div>
-);
 
 export default ManualScreen;

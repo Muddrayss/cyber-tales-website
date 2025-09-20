@@ -4,11 +4,11 @@ import { NavbarContext } from '../contexts/navbar.context';
 
 import {
   PATH_HOME,
-  PATH_APP,
   PATH_MANUAL,
   PATH_MUSIC,
-  PATH_INSTAGRAM,
   PATH_CREDITS,
+  PATH_MINIGAMES,
+  PATH_ABOUT,
 } from '../utils/navigate.utils';
 
 const Header: React.FC = () => {
@@ -41,10 +41,10 @@ const Header: React.FC = () => {
 
   const navigation = [
     { content: 'Home', path: PATH_HOME },
-    { content: 'App', path: PATH_APP },
+    { content: 'Chi siamo', path: PATH_ABOUT },
+    { content: 'Minigiochi', path: PATH_MINIGAMES },
     { content: 'Manuale', path: PATH_MANUAL },
     { content: 'Musica', path: PATH_MUSIC },
-    { content: 'Instagram', path: PATH_INSTAGRAM },
     { content: 'Crediti', path: PATH_CREDITS },
   ];
 
@@ -61,12 +61,19 @@ const Header: React.FC = () => {
       >
         <section className='section-container'>
           <div className='flex items-center justify-between py-3 md:py-5 md:block'>
-            <a href={PATH_HOME}>
+            {/* <a href={PATH_HOME}>
               <img
                 src='/images/icons/cyber_tales_icon.png'
                 width={50}
                 alt='higloo logo'
               />
+            </a> */}
+            <a
+              href={PATH_HOME}
+              className='select-none text-xl font-extrabold tracking-tight'
+              aria-label='CyberTales Home'
+            >
+              <span className='main-title-gradient'>CyberTales</span>
             </a>
             <div className='md:hidden'>
               <button

@@ -14,12 +14,30 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
+    "baseUrl": "./src",
+    "paths": {
+      "@images/*": ["../public/images/*"],
+      "@fonts/*": ["../public/fonts/*"],
+      "@assets/*": ["assets/*"],
+      "@components/*": ["components/*"],
+      "@screens/*": ["screens/*"],
+      "@games/*": ["games/*"],
+      "@lib/*": ["lib/*"],
+      "@utils/*": ["utils/*"],
+      "@types/*": ["types/*"],
+      "@contexts/*": ["contexts/*"],
+      "@configs/*": ["configs/*"]
+    },
+
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"],
+  "include": [
+    "src/**/*",
+    "types/**/*"
+  ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

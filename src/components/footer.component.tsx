@@ -4,15 +4,15 @@ const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className='bg-primary border-t-2 border-white pt-12 pb-6 mt-14 px-6 sm:px-24 md:px-4 text-on-primary'>
+    <footer className='bg-primary border-t-2 border-white pt-12 pb-6 px-6 sm:px-24 md:px-4 text-on-primary'>
       <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
         <div className='flex row-start-1 md:row-start-auto flex-col justify-start items-start gap-4 md:mx-auto'>
           <img
             src={`${
               import.meta.env.VITE_PUBLIC_URL
-            }images/icons/cyber_tales_icon.png`}
-            alt='higloo-icon'
-            className='w-10'
+            }images/icons/cyber_tales_icon_mascotte.png`}
+            alt='cybertales-icon'
+            className='w-14'
           />
           <div className='max-w-[50ch] text-xl'>
             Unisciti alla nostra missione per dare potere ai cittadini digitali!
