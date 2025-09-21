@@ -26,7 +26,8 @@
       "@utils/*": ["utils/*"],
       "@types/*": ["types/*"],
       "@contexts/*": ["contexts/*"],
-      "@configs/*": ["configs/*"]
+      "@configs/*": ["configs/*"],
+      "@hooks/*": ["hooks/*"]
     },
 
     /* Linting */

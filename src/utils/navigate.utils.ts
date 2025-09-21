@@ -46,3 +46,14 @@ export const navigateToStaffScanner = (navigator: NavigateFunction) => {
 export const navigateToNotFound = (navigator: NavigateFunction) => {
   navigator(PATH_NOT_FOUND);
 };
+
+export const pathGame = (game: string, difficulty?: string) =>
+  difficulty ? `${PATH_MINIGAMES}${encodeURIComponent(game)}/${encodeURIComponent(difficulty)}`
+             : `${PATH_MINIGAMES}${encodeURIComponent(game)}`;
+
+export const pathUserGate = (ret?: string) =>
+  ret ? `${PATH_MINIGAMES}user?ret=${encodeURIComponent(ret)}`
+      : `${PATH_MINIGAMES}user`;
+
+export const pathSubmitScore = (opts: { game: string; difficulty: string; score: number }) =>
+  `${PATH_MINIGAMES}submit-score?game=${encodeURIComponent(opts.game)}&difficulty=${encodeURIComponent(opts.difficulty)}&score=${encodeURIComponent(String(opts.score))}`;

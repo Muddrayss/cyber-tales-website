@@ -6,7 +6,8 @@
 */
 import { useCallback, useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { buildGamePath } from '@utils/game.utils';
+
+import { pathGame } from '@utils/navigate.utils';
 
 // contexts
 import { NavbarContext } from '@contexts/navbar.context';
@@ -31,7 +32,7 @@ export default function MinigamesAndAppScreen() {
   const [focusIdx, setFocusIdx] = useState(-1);
 
   const go = useCallback(
-    (game: GameKey) => navigate(buildGamePath(game)),
+    (game: GameKey) => navigate(pathGame(game)),
     [navigate]
   );
 

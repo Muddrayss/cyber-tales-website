@@ -9,6 +9,8 @@ import { useCallback, useEffect, useMemo, useState, useContext } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { PATH_MINIGAMES } from '@utils/navigate.utils';
 
+import { pathGame } from '@utils/navigate.utils';
+
 // contexts
 import { NavbarContext } from '@contexts/navbar.context';
 
@@ -20,7 +22,6 @@ import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import { GameKey, Difficulty } from 'types/games.type';
 
 // utils
-import { buildGameDifficultyPath } from '@utils/game.utils';
 import { DIFFICULTIES_METADATA } from '@configs/difficulties-metadata';
 
 /* Mappa nomi “umani” per UI */
@@ -53,7 +54,7 @@ export default function DifficultySelectionScreen() {
   const go = useCallback(
     (diff: Difficulty) => {
       if (!safeGame) return;
-      navigate(buildGameDifficultyPath(safeGame, diff));
+      navigate(pathGame(safeGame, diff));
     },
     [navigate, safeGame]
   );
