@@ -90,7 +90,7 @@ const ScoreForm: React.FC<ScoreFormProps> = ({
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           onBlur={() => setTouched((t) => ({ ...t, email: true }))}
-          placeholder='tu@esempio.com'
+          placeholder='nome@gmail.com'
           disabled={status === 'saving' || status === 'saved'}
           className={[
             'mt-1 w-full rounded-xl bg-white/10 px-3 py-2 text-sm ring-1 placeholder:text-white/60 disabled:opacity-60',

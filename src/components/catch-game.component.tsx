@@ -21,8 +21,8 @@ interface DropItem {
 let nextItemId = 1;
 
 // sizing
-const BASKET_WIDTH_REL = 0.16; const BASKET_MIN = 84; const BASKET_MAX = 220; const BASKET_ASPECT = 1.0;
-const ITEM_REL = 0.06; const ITEM_MIN = 26; const ITEM_MAX = 56;
+const BASKET_WIDTH_REL = 0.16; const BASKET_MIN = 84; const BASKET_MAX = 150; const BASKET_ASPECT = 1.0;
+const ITEM_REL = 0.06; const ITEM_MIN = 26; const ITEM_MAX = 46;
 const SPAWN_EDGE_MARGIN = 24;
 const TOP_BAND_MIN_PX = 10; const TOP_BAND_MAX_PX = 56;
 const ROT_SPEED_MIN = 60; const ROT_SPEED_MAX = 220;

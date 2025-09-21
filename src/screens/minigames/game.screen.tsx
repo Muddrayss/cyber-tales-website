@@ -1,16 +1,14 @@
-import { useEffect, useMemo, useCallback } from 'react';
+import { useEffect, useMemo, useCallback, useContext } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { GameKey, Difficulty } from 'types/games.type.ts';
 import { usePlayerName } from '@hooks/use-player-name.hook.ts';
 import CatchGame from '@components/catch-game.component.tsx';
 
-import { PATH_MINIGAMES } from '@utils/navigate.utils';
+// contexts
+import { NavbarContext } from '@contexts/navbar.context';
 
-const GAME_LABEL: Record<GameKey, string> = {
-  catch: 'Catch & Clean',
-  memory: 'Memory Express',
-  word: 'Parola Segreta',
-};
+// navigation
+import { PATH_MINIGAMES } from '@utils/navigate.utils';
 
 const isDifficulty = (v: any): v is Difficulty =>
   v === 'junior' || v === 'standard' || v === 'pro';
@@ -18,6 +16,7 @@ const isGame = (v: any): v is GameKey =>
   v === 'catch' || v === 'memory' || v === 'word';
 
 export default function GameScreen() {
+  const { navbarHeight } = useContext(NavbarContext);
   const { game, difficulty } = useParams<{
     game: string;
     difficulty?: string;
@@ -63,37 +62,12 @@ export default function GameScreen() {
 
   if (!g) return null;
 
-  const title = GAME_LABEL[g];
-
   return (
-    <div className='mx-auto max-w-5xl px-4 py-6'>
-      <header className='mb-4 flex items-center justify-between'>
-        <div>
-          <p className='text-xs uppercase opacity-70'>Minigioco</p>
-          <h1 className='text-xl md:text-2xl font-bold tracking-tight'>
-            {title}
-          </h1>
-          <p className='text-xs opacity-70'>
-            Difficoltà: <strong>{d}</strong>
-          </p>
-        </div>
-        <div className='flex gap-2'>
-          <button
-            onClick={() => navigate(`/minigames/${g}`)}
-            className='rounded-xl border border-white/10 px-3 py-2 text-sm hover:bg-white/5 transition'
-          >
-            Cambia difficoltà
-          </button>
-          <button
-            onClick={() => navigate('/minigames')}
-            className='rounded-xl border border-white/10 px-3 py-2 text-sm hover:bg-white/5 transition'
-          >
-            Minigiochi
-          </button>
-        </div>
-      </header>
-
-      <div className='relative w-full min-h-[60svh] overflow-hidden rounded-2xl bg-black/40 ring-1 ring-white/10'>
+    <div
+      className='mx-auto w-full px-4 py-6 h-[90svh]'
+      style={{ marginTop: navbarHeight }}
+    >
+      <div className='relative w-full h-full overflow-hidden rounded-2xl bg-black/40 ring-1 ring-white/10'>
         {g === 'catch' ? (
           <CatchGame difficulty={d} onGameOver={handleGameOver} />
         ) : (
@@ -102,10 +76,6 @@ export default function GameScreen() {
           </div>
         )}
       </div>
-
-      <footer className='mt-4 text-xs opacity-60'>
-        Comandi: trascina col mouse/touch. Durata ~60s.
-      </footer>
     </div>
   );
 }
