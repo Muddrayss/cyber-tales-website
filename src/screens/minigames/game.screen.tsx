@@ -1,14 +1,22 @@
 import { useEffect, useMemo, useCallback, useContext } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+
+// types
 import type { GameKey, Difficulty } from 'types/games.type.ts';
+
+// hooks
 import { usePlayerName } from '@hooks/use-player-name.hook.ts';
+
+// components
 import CatchGame from '@components/catch-game.component.tsx';
+import MemoryGame from '@components/memory-game.component';
 
 // contexts
 import { NavbarContext } from '@contexts/navbar.context';
 
 // navigation
 import { PATH_MINIGAMES } from '@utils/navigate.utils';
+import WordGame from '@components/word-game.component';
 
 const isDifficulty = (v: any): v is Difficulty =>
   v === 'junior' || v === 'standard' || v === 'pro';
@@ -68,12 +76,14 @@ export default function GameScreen() {
       style={{ marginTop: navbarHeight }}
     >
       <div className='relative w-full h-full overflow-hidden rounded-2xl bg-black/40 ring-1 ring-white/10'>
-        {g === 'catch' ? (
+        {g === 'catch' && (
           <CatchGame difficulty={d} onGameOver={handleGameOver} />
-        ) : (
-          <div className='absolute inset-0 grid place-items-center'>
-            <p className='text-lg font-medium text-white/80'>Coming soon…</p>
-          </div>
+        )}
+        {g === 'memory' && (
+          <MemoryGame difficulty={d} onGameOver={handleGameOver} />
+        )}
+        {g === 'word' && (
+          <WordGame difficulty={d} onGameOver={handleGameOver} />
         )}
       </div>
     </div>

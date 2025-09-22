@@ -29,24 +29,7 @@ export default function SubmitScoreScreen() {
   const score = useMemo(() => Number(params.get('score') ?? 0), [params]);
 
   return (
-    <div className='main-container'>
-      <header
-        className='mx-auto max-w-7xl px-6 pb-8 pt-4 md:pb-16 md:pt-8'
-        style={{ marginTop: navbarHeight }}
-      >
-        <p className='text-xs uppercase text-white'>Minigioco</p>
-        <h1 className='main-title my-3'>
-          <span className='main-title-gradient'>{TITLE[game]}</span>
-        </h1>
-        <p className='text-xl'>
-          Difficoltà:{' '}
-          <span className='text-orange-300'>{capitalize(difficulty)}</span>
-        </p>
-        <p className='text-xl'>
-          Punteggio: <span className='text-orange-300'>{score}</span>
-        </p>
-      </header>
-
+    <div style={{ marginTop: navbarHeight }}>
       <ScoreForm
         game={game}
         difficulty={difficulty}

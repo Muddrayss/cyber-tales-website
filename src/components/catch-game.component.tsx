@@ -1,197 +1,426 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import type { Difficulty, CatchDifficultyConfig } from "types/games.type.ts";
-import { clamp, randBetween } from "@utils/game.utils.ts";
-import TimeBar from "@components/time-bar.component.tsx";
+import { useEffect, useMemo, useRef, useState } from 'react';
+import type { Difficulty, CatchDifficultyConfig } from 'types/games.type.ts';
+import { clamp, randBetween } from '@utils/game.utils.ts';
+import TimeBar from '@components/time-bar.component.tsx';
 
-import basketImg from "@assets/games/catch/basket.png";
-import goodItemImg from "@assets/games/catch/good.png";
-import badItemImg from "@assets/games/catch/bad.png";
-
-interface Props { difficulty: Difficulty; onGameOver: (finalScore: number) => void; }
+interface Props {
+  difficulty: Difficulty;
+  onGameOver: (finalScore: number) => void;
+}
 
 const DIFF: Record<Difficulty, CatchDifficultyConfig> = {
-  junior:   { spawnMsRange: [500, 850], fallSpeed: { min: 160, max: 220 }, goodRatio: 0.75, durationSec: 60, badPenalty: 20, baseScore: 10, comboBonus: 2, topBandRel: 0.26 },
-  standard: { spawnMsRange: [420, 740], fallSpeed: { min: 200, max: 280 }, goodRatio: 0.60, durationSec: 60, badPenalty: 25, baseScore: 12, comboBonus: 3, topBandRel: 0.20 },
-  pro:      { spawnMsRange: [340, 620], fallSpeed: { min: 240, max: 340 }, goodRatio: 0.50, durationSec: 60, badPenalty: 30, baseScore: 14, comboBonus: 4, topBandRel: 0.14 },
+  junior: {
+    spawnMsRange: [500, 850],
+    fallSpeed: { min: 160, max: 220 },
+    goodRatio: 0.75,
+    durationSec: 60,
+    badPenalty: 20,
+    baseScore: 10,
+    comboBonus: 2,
+    topBandRel: 0.26,
+  },
+  standard: {
+    spawnMsRange: [420, 740],
+    fallSpeed: { min: 200, max: 280 },
+    goodRatio: 0.6,
+    durationSec: 60,
+    badPenalty: 25,
+    baseScore: 12,
+    comboBonus: 3,
+    topBandRel: 0.2,
+  },
+  pro: {
+    spawnMsRange: [340, 620],
+    fallSpeed: { min: 240, max: 340 },
+    goodRatio: 0.5,
+    durationSec: 60,
+    badPenalty: 30,
+    baseScore: 14,
+    comboBonus: 4,
+    topBandRel: 0.14,
+  },
 };
 
 interface DropItem {
-  id: number; kind: "good" | "bad"; x: number; y: number; speed: number; angle: number; av: number;
+  id: number;
+  kind: 'good' | 'bad';
+  x: number;
+  y: number;
+  speed: number;
+  angle: number;
+  av: number;
+  caught?: boolean;
 }
+
+interface Effect {
+  id: number;
+  x: number;
+  y: number;
+  text: string;
+  color: string;
+}
+
 let nextItemId = 1;
 
 // sizing
-const BASKET_WIDTH_REL = 0.16; const BASKET_MIN = 84; const BASKET_MAX = 150; const BASKET_ASPECT = 1.0;
-const ITEM_REL = 0.06; const ITEM_MIN = 26; const ITEM_MAX = 46;
+const BASKET_WIDTH_REL = 0.16;
+const BASKET_MIN = 84;
+const BASKET_MAX = 150;
+const BASKET_ASPECT = 0.8;
+const ITEM_REL = 0.07;
+const ITEM_MIN = 32;
+const ITEM_MAX = 52;
 const SPAWN_EDGE_MARGIN = 24;
-const TOP_BAND_MIN_PX = 10; const TOP_BAND_MAX_PX = 56;
-const ROT_SPEED_MIN = 60; const ROT_SPEED_MAX = 220;
+const TOP_BAND_MIN_PX = 10;
+const TOP_BAND_MAX_PX = 56;
+const ROT_SPEED_MIN = 60;
+const ROT_SPEED_MAX = 220;
 
 // movement tuning
 const BASKET_SPEED_REL = 1.4;
-const BASKET_SPEED_MIN = 520; const BASKET_SPEED_MAX = 2400;
+const BASKET_SPEED_MIN = 520;
+const BASKET_SPEED_MAX = 2400;
 const FOLLOW_GAIN = 0.45;
-const BOOST_THRESHOLD_REL = 0.9; const BOOST_MULT = 1.4;
+const BOOST_THRESHOLD_REL = 0.9;
+const BOOST_MULT = 1.4;
+
+// Visual items
+const GOOD_ITEMS = ['🛡️', '🔐', '🔑', '💎', '⭐', '🏆', '💰', '🎯'];
+const BAD_ITEMS = ['🦠', '💣', '☠️', '⚠️', '🚫', '❌', '🔥', '👾'];
 
 const CatchGame: React.FC<Props> = ({ difficulty, onGameOver }) => {
   const cfg = DIFF[difficulty];
 
   // container & resize
   const areaRef = useRef<HTMLDivElement>(null);
-  const [w, setW] = useState(0); const [h, setH] = useState(0);
+  const [w, setW] = useState(0);
+  const [h, setH] = useState(0);
+
   useEffect(() => {
-    const update = () => { if (!areaRef.current) return;
-      setW(areaRef.current.clientWidth); setH(areaRef.current.clientHeight); };
-    update(); const ro = new ResizeObserver(update);
+    const update = () => {
+      if (!areaRef.current) return;
+      setW(areaRef.current.clientWidth);
+      setH(areaRef.current.clientHeight);
+    };
+    update();
+    const ro = new ResizeObserver(update);
     if (areaRef.current) ro.observe(areaRef.current);
-    window.addEventListener("resize", update);
-    return () => { ro.disconnect(); window.removeEventListener("resize", update); };
+    window.addEventListener('resize', update);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', update);
+    };
   }, []);
 
   // pointer input
   const pointerActive = useRef(false);
   const pointerX = useRef<number | null>(null);
+
   const onPointerDown = (e: React.PointerEvent) => {
     (e.currentTarget as HTMLDivElement).setPointerCapture?.(e.pointerId);
     pointerActive.current = true;
     const rect = areaRef.current?.getBoundingClientRect();
     pointerX.current = rect ? e.clientX - rect.left : e.clientX;
   };
+
   const onPointerMove = (e: React.PointerEvent) => {
     if (!pointerActive.current) return;
     const rect = areaRef.current?.getBoundingClientRect();
     if (rect) pointerX.current = e.clientX - rect.left;
   };
+
   const endPointer = (e?: React.PointerEvent) => {
-    if (e) (e.currentTarget as HTMLDivElement).releasePointerCapture?.(e.pointerId);
-    pointerActive.current = false; pointerX.current = null;
+    if (e)
+      (e.currentTarget as HTMLDivElement).releasePointerCapture?.(e.pointerId);
+    pointerActive.current = false;
+    pointerX.current = null;
   };
 
   // state
-  const [score, setScore] = useState(0); const scoreRef = useRef(0);
-  const [combo, setCombo] = useState(0); const comboRef = useRef(0);
-  const [timeLeft, setTimeLeft] = useState(cfg.durationSec); const timeRef = useRef(cfg.durationSec);
+  const [score, setScore] = useState(0);
+  const scoreRef = useRef(0);
+  const [combo, setCombo] = useState(0);
+  const comboRef = useRef(0);
+  const [maxCombo, setMaxCombo] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(cfg.durationSec);
+  const timeRef = useRef(cfg.durationSec);
   const [drops, setDrops] = useState<DropItem[]>([]);
+  const [basketX, setBasketX] = useState(0);
+  const basketXRef = useRef(0);
+  const [effects, setEffects] = useState<Effect[]>([]);
+  const [shakeBasket, setShakeBasket] = useState(false);
+  const [showCombo, setShowCombo] = useState(false);
+  const [gameStarted, setGameStarted] = useState(false);
+  const basketRef = useRef<HTMLDivElement>(null);
 
-  const [basketX, setBasketX] = useState(0); const basketXRef = useRef(0);
-  useEffect(() => { basketXRef.current = basketX; }, [basketX]);
+  useEffect(() => {
+    basketXRef.current = basketX;
+  }, [basketX]);
 
   // sizes
-  const basketW = useMemo(() => clamp(w * BASKET_WIDTH_REL, BASKET_MIN, BASKET_MAX), [w]);
+  const basketW = useMemo(
+    () => clamp(w * BASKET_WIDTH_REL, BASKET_MIN, BASKET_MAX),
+    [w]
+  );
   const basketH = useMemo(() => Math.round(basketW * BASKET_ASPECT), [basketW]);
   const itemSize = useMemo(() => clamp(w * ITEM_REL, ITEM_MIN, ITEM_MAX), [w]);
 
-  useEffect(() => { if (w > 0) { setBasketX(w / 2); basketXRef.current = w / 2; } }, [w]);
+  useEffect(() => {
+    if (w > 0) {
+      basketXRef.current = w / 2;
+      if (basketRef.current) {
+        basketRef.current.style.transform = `translate3d(${
+          basketXRef.current - basketW / 2
+        }px, 0, 0)`;
+      } else {
+        // fallback se vuoi mantenere lo state per il primo render
+        setBasketX(w / 2);
+      }
+    }
+  }, [w, basketW]);
 
-  // collision rule: catch when item crosses band [basketTop, basketTop + bandDepth] and overlaps horizontally
+  // collision rule
   const isTopBandCatchInside = (it: DropItem, prevY: number, nextY: number) => {
     const basketLeft = basketXRef.current - basketW / 2;
     const basketRight = basketXRef.current + basketW / 2;
     const basketTop = h - basketH;
 
-    const bandDepth = clamp(basketH * cfg.topBandRel, TOP_BAND_MIN_PX, TOP_BAND_MAX_PX);
-    const bandTop = basketTop, bandBottom = basketTop + bandDepth;
+    const bandDepth = clamp(
+      basketH * cfg.topBandRel,
+      TOP_BAND_MIN_PX,
+      TOP_BAND_MAX_PX
+    );
+    const bandTop = basketTop;
+    const bandBottom = basketTop + bandDepth;
 
-    const prevBottom = prevY + itemSize, nextBottom = nextY + itemSize;
-    const itemLeft = it.x, itemRight = it.x + itemSize;
+    const prevBottom = prevY + itemSize;
+    const nextBottom = nextY + itemSize;
+    const itemLeft = it.x;
+    const itemRight = it.x + itemSize;
 
     const overlapX = itemRight > basketLeft && itemLeft < basketRight;
     const intersectsBand = nextBottom >= bandTop && prevBottom <= bandBottom;
     return overlapX && intersectsBand;
   };
 
+  // Add floating effect
+  const addEffect = (x: number, y: number, text: string, color: string) => {
+    const id = Date.now() + Math.random();
+    setEffects((prev) => [...prev, { id, x, y, text, color }]);
+    setTimeout(() => {
+      setEffects((prev) => prev.filter((e) => e.id !== id));
+    }, 1500);
+  };
+
   // loop
   useEffect(() => {
     if (w === 0 || h === 0) return;
 
-    let fallMin = cfg.fallSpeed.min, fallMax = cfg.fallSpeed.max;
-    let raf = 0, last = performance.now();
-    let spawnTimer = 0 as number | ReturnType<typeof setTimeout>;
-    let speedTimer = 0 as number | ReturnType<typeof setInterval>;
+    let fallMin = cfg.fallSpeed.min;
+    let fallMax = cfg.fallSpeed.max;
+    let raf = 0;
+    let last = performance.now();
+    let spawnTimer: any = 0;
+    let speedTimer: any = 0;
 
     // reset
-    scoreRef.current = 0; setScore(0);
-    comboRef.current = 0; setCombo(0);
-    timeRef.current = cfg.durationSec; setTimeLeft(cfg.durationSec);
+    scoreRef.current = 0;
+    setScore(0);
+    comboRef.current = 0;
+    setCombo(0);
+    setMaxCombo(0);
+    timeRef.current = cfg.durationSec;
+    setTimeLeft(cfg.durationSec);
     setDrops([]);
+    setEffects([]);
+    setGameStarted(true);
 
     const spawnOne = () => {
       const isGood = Math.random() < cfg.goodRatio;
-      const kind: "good" | "bad" = isGood ? "good" : "bad";
-      const xPos = randBetween(SPAWN_EDGE_MARGIN, Math.max(SPAWN_EDGE_MARGIN, w - SPAWN_EDGE_MARGIN - Math.round(itemSize)));
+      const kind: 'good' | 'bad' = isGood ? 'good' : 'bad';
+      const xPos = randBetween(
+        SPAWN_EDGE_MARGIN,
+        Math.max(
+          SPAWN_EDGE_MARGIN,
+          w - SPAWN_EDGE_MARGIN - Math.round(itemSize)
+        )
+      );
       const speed = randBetween(Math.round(fallMin), Math.round(fallMax));
       const sign = Math.random() < 0.5 ? -1 : 1;
       const av = sign * randBetween(ROT_SPEED_MIN, ROT_SPEED_MAX);
       const angle = randBetween(0, 359);
-      setDrops(d => [...d, { id: nextItemId++, kind, x: xPos, y: -itemSize, speed, angle, av }]);
+      setDrops((d) => [
+        ...d,
+        { id: nextItemId++, kind, x: xPos, y: -itemSize, speed, angle, av },
+      ]);
     };
 
     const scheduleSpawn = () => {
       const [minMs, maxMs] = cfg.spawnMsRange;
       const delay = randBetween(minMs, maxMs);
-      spawnTimer = setTimeout(() => { spawnOne(); scheduleSpawn(); }, delay);
+      spawnTimer = setTimeout(() => {
+        spawnOne();
+        scheduleSpawn();
+      }, delay);
     };
-    const startSpeedRamp = () => { speedTimer = setInterval(() => { fallMin *= 1.05; fallMax *= 1.05; }, 10_000); };
-    const endGame = () => { clearTimeout(spawnTimer); clearInterval(speedTimer); cancelAnimationFrame(raf); onGameOver(scoreRef.current); };
 
-    scheduleSpawn(); startSpeedRamp();
+    const startSpeedRamp = () => {
+      speedTimer = setInterval(() => {
+        fallMin *= 1.05;
+        fallMax *= 1.05;
+      }, 10_000);
+    };
+
+    const endGame = () => {
+      clearTimeout(spawnTimer);
+      clearInterval(speedTimer);
+      cancelAnimationFrame(raf);
+      setGameStarted(false);
+      onGameOver(scoreRef.current);
+    };
+
+    scheduleSpawn();
+    startSpeedRamp();
 
     const loop = () => {
-      const now = performance.now(); const dt = (now - last) / 1000; last = now;
+      const now = performance.now();
+      const dt = (now - last) / 1000;
+      last = now;
 
       // basket movement (responsive + boost)
       if (pointerActive.current && pointerX.current != null) {
-        let speed = clamp(w * BASKET_SPEED_REL, BASKET_SPEED_MIN, BASKET_SPEED_MAX);
+        let speed = clamp(
+          w * BASKET_SPEED_REL,
+          BASKET_SPEED_MIN,
+          BASKET_SPEED_MAX
+        );
         const dx = pointerX.current - basketXRef.current;
         if (Math.abs(dx) > BOOST_THRESHOLD_REL * basketW) speed *= BOOST_MULT;
         const maxStep = speed * dt;
         const step = clamp(dx * FOLLOW_GAIN, -maxStep, maxStep);
-        const nx = clamp(basketXRef.current + step, basketW / 2, w - basketW / 2);
-        if (nx !== basketXRef.current) { basketXRef.current = nx; setBasketX(nx); }
+        const nx = clamp(
+          basketXRef.current + step,
+          basketW / 2,
+          w - basketW / 2
+        );
+        if (nx !== basketXRef.current) {
+          basketXRef.current = nx;
+          if (basketRef.current) {
+            basketRef.current.style.transform = `translate3d(${
+              nx - basketW / 2
+            }px, 0, 0)`;
+          }
+        }
       }
 
-      // items
-      setDrops(prev => {
-        const next: DropItem[] = []; let resetCombo = false;
+      // items physics
+      setDrops((prev) => {
+        const next: DropItem[] = [];
+        let resetCombo = false;
+
         for (const it of prev) {
-          const prevY = it.y; const ny = it.y + it.speed * dt;
+          if (it.caught) continue;
+
+          const prevY = it.y;
+          const ny = it.y + it.speed * dt;
           const nAngle = (it.angle + it.av * dt) % 360;
 
           if (isTopBandCatchInside(it, prevY, ny)) {
-            if (it.kind === "good") {
-              comboRef.current += 1; setCombo(comboRef.current);
+            if (it.kind === 'good') {
+              comboRef.current += 1;
+              setCombo(comboRef.current);
+
+              if (comboRef.current > maxCombo) {
+                setMaxCombo(comboRef.current);
+              }
+
+              if (comboRef.current >= 5 && comboRef.current % 5 === 0) {
+                setShowCombo(true);
+                setTimeout(() => setShowCombo(false), 1500);
+              }
+
               const mult = 1 + Math.floor(comboRef.current / 3);
-              scoreRef.current += cfg.baseScore * mult + cfg.comboBonus; setScore(scoreRef.current);
+              const points = cfg.baseScore * mult + cfg.comboBonus;
+              scoreRef.current += points;
+              setScore(scoreRef.current);
+
+              addEffect(
+                basketXRef.current,
+                h - basketH - 20,
+                `+${points}`,
+                '#10b981'
+              );
+
+              // Add caught animation
+              next.push({ ...it, caught: true, y: ny, angle: nAngle });
+              setTimeout(() => {
+                setDrops((p) => p.filter((d) => d.id !== it.id));
+              }, 300);
             } else {
-              comboRef.current = 0; setCombo(0);
-              scoreRef.current = Math.max(0, scoreRef.current - cfg.badPenalty); setScore(scoreRef.current);
+              comboRef.current = 0;
+              setCombo(0);
+              scoreRef.current = Math.max(0, scoreRef.current - cfg.badPenalty);
+              setScore(scoreRef.current);
+
+              addEffect(
+                basketXRef.current,
+                h - basketH - 20,
+                `-${cfg.badPenalty}`,
+                '#ef4444'
+              );
+              setShakeBasket(true);
+              setTimeout(() => setShakeBasket(false), 300);
             }
             continue;
           }
 
-          if (ny > h) { if (it.kind === "good") resetCombo = true; continue; }
+          if (ny > h) {
+            if (it.kind === 'good') {
+              resetCombo = true;
+              addEffect(it.x + itemSize / 2, h - 50, 'Perso!', '#f59e0b');
+            }
+            continue;
+          }
 
           next.push({ ...it, y: ny, angle: nAngle });
         }
-        if (resetCombo) { comboRef.current = 0; setCombo(0); }
+
+        if (resetCombo) {
+          comboRef.current = 0;
+          setCombo(0);
+        }
         return next;
       });
 
-      timeRef.current = Math.max(0, timeRef.current - dt); setTimeLeft(timeRef.current);
-      if (timeRef.current <= 0) { endGame(); return; }
+      timeRef.current = Math.max(0, timeRef.current - dt);
+      setTimeLeft(timeRef.current);
+      if (timeRef.current <= 0) {
+        endGame();
+        return;
+      }
 
       raf = requestAnimationFrame(loop);
     };
 
     raf = requestAnimationFrame(loop);
-    return () => { clearTimeout(spawnTimer); clearInterval(speedTimer); cancelAnimationFrame(raf); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => {
+      clearTimeout(spawnTimer);
+      clearInterval(speedTimer);
+      cancelAnimationFrame(raf);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [w, h, difficulty, itemSize, basketW, basketH]);
+
+  const timePercentage =
+    cfg.durationSec > 0
+      ? Math.max(0, Math.min(1, timeLeft / cfg.durationSec))
+      : 0;
+  const timeWarning = timePercentage < 0.2;
 
   return (
     <div
       ref={areaRef}
-      className="absolute inset-0 select-none touch-none"
+      className='absolute inset-0 select-none touch-none bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 overflow-hidden'
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={endPointer}
@@ -201,32 +430,247 @@ const CatchGame: React.FC<Props> = ({ difficulty, onGameOver }) => {
       onDragStart={(e) => e.preventDefault()}
       onDragOver={(e) => e.preventDefault()}
       onDrop={(e) => e.preventDefault()}
-      style={{ cursor: pointerActive.current ? "grabbing" : "grab" } as React.CSSProperties}
+      style={
+        {
+          cursor: pointerActive.current ? 'grabbing' : 'grab',
+        } as React.CSSProperties
+      }
     >
-      {/* HUD */}
-      <div className="absolute left-[14px] top-[14px] z-10 text-white text-sm">
-        <div>Punti: <b>{score}</b></div>
-        <div className="text-indigo-200">Combo ×{Math.max(1, 1 + Math.floor(combo / 3))}</div>
+      {/* Animated background */}
+      <div className='absolute inset-0 pointer-events-none'>
+        <div className='absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-pulse'></div>
+        <div
+          className='absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-pulse'
+          style={{ animationDelay: '2s' }}
+        ></div>
       </div>
 
-      <div className="absolute right-[14px] top-[18px] z-10">
-        <TimeBar value={timeLeft / cfg.durationSec} widthPx={Math.max(160, Math.min(320, Math.round(w * 0.3)))} heightPx={14} rounded />
+      {/* HUD */}
+      <div className='absolute top-0 left-0 right-0 p-4 z-20 pointer-events-none'>
+        <div className='flex flex-wrap items-start justify-between gap-4'>
+          {/* Score & Stats */}
+          <div className='flex flex-wrap gap-3'>
+            <div className='bg-white/10 backdrop-blur-md rounded-2xl px-5 py-3 border border-white/20 shadow-xl'>
+              <div className='text-xs text-white/60 mb-1 uppercase tracking-wide'>
+                Punteggio
+              </div>
+              <div className='text-2xl font-bold text-white flex items-center gap-2'>
+                <span className='text-yellow-400'>⭐</span>
+                {score}
+              </div>
+            </div>
+
+            {combo > 0 && (
+              <div
+                className={`bg-gradient-to-r ${
+                  combo >= 5
+                    ? 'from-orange-500/30 to-red-500/30'
+                    : 'from-cyan-500/20 to-blue-500/20'
+                } backdrop-blur-md rounded-2xl px-5 py-3 border ${
+                  combo >= 5 ? 'border-orange-400/50' : 'border-cyan-400/30'
+                } shadow-xl transition-all transform ${
+                  combo >= 5 ? 'scale-105' : ''
+                }`}
+              >
+                <div className='text-xs text-white/60 mb-1 uppercase tracking-wide'>
+                  Combo
+                </div>
+                <div className='text-2xl font-bold text-white flex items-center gap-2'>
+                  <span>{combo >= 5 ? '🔥' : '✨'}</span>×
+                  {1 + Math.floor(combo / 3)}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Timer */}
+          <div className='flex-1 max-w-sm'>
+            <div className='bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 shadow-xl'>
+              <div className='flex items-center justify-between mb-2'>
+                <span className='text-xs text-white/60 uppercase tracking-wide'>
+                  Tempo
+                </span>
+                <span
+                  className={`text-lg font-bold ${
+                    timeWarning ? 'text-red-400 animate-pulse' : 'text-white'
+                  }`}
+                >
+                  {Math.ceil(timeLeft)}s
+                </span>
+              </div>
+              <TimeBar
+                value={timePercentage}
+                widthPx={280}
+                heightPx={8}
+                rounded
+                className={timeWarning ? 'animate-pulse' : ''}
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Basket */}
-      <img
-        src={basketImg} alt="Cestino" draggable={false} onDragStart={(e) => e.preventDefault()}
-        style={{ position:'absolute', width:`${basketW}px`, height:`${basketH}px`, left:`${basketX - basketW / 2}px`, bottom:`0px`, pointerEvents:'none', WebkitUserDrag:'none', imageRendering:'auto' } as React.CSSProperties}
-      />
+      <div
+        ref={basketRef}
+        className={`absolute ${shakeBasket ? 'animate-shake' : ''}`}
+        style={{
+          width: `${basketW}px`,
+          height: `${basketH}px`,
+          left: 0,
+          bottom: `0px`,
+          transform: `translate3d(${basketX - basketW / 2}px, 0, 0)`,
+          willChange: 'transform',
+          pointerEvents: 'none',
+        }}
+      >
+        <div className='relative w-full h-full'>
+          {/* Basket glow effect */}
+          <div className='absolute inset-0 bg-gradient-to-t from-cyan-500/30 to-transparent rounded-t-2xl blur-xl'></div>
+
+          {/* Basket body */}
+          <div className='absolute inset-0 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-t-2xl border-4 border-white/30 shadow-2xl'>
+            <div className='absolute inset-x-0 top-2 h-2 bg-white/20 rounded-full'></div>
+            <div className='absolute inset-0 flex items-center justify-center'>
+              <span className='text-3xl opacity-50'>🧺</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Items */}
-      {drops.map((it) => (
-        <img
-          key={it.id} src={it.kind === "good" ? goodItemImg : badItemImg} alt={it.kind === "good" ? "Buono" : "Cattivo"}
-          draggable={false} onDragStart={(e) => e.preventDefault()}
-          style={{ position:'absolute', width:`${itemSize}px`, height:`${itemSize}px`, left:`${it.x}px`, top:`${it.y}px`, pointerEvents:'none', WebkitUserDrag:'none', transform:`rotate(${it.angle}deg)`, transformOrigin:'50% 50%', willChange:'transform, top' } as React.CSSProperties}
-        />
+      {drops.map((it) => {
+        const itemEmoji =
+          it.kind === 'good'
+            ? GOOD_ITEMS[it.id % GOOD_ITEMS.length]
+            : BAD_ITEMS[it.id % BAD_ITEMS.length];
+
+        return (
+          <div
+            key={it.id}
+            className={`absolute pointer-events-none transition-all ${
+              it.caught ? 'scale-150 opacity-0' : ''
+            }`}
+            style={{
+              width: `${itemSize}px`,
+              height: `${itemSize}px`,
+              left: `${it.x}px`,
+              top: `${it.y}px`,
+              transform: `rotate(${it.angle}deg) ${
+                it.caught ? 'scale(1.5)' : 'scale(1)'
+              }`,
+              transition: it.caught ? 'all 0.3s ease-out' : 'none',
+              willChange: 'transform, top',
+            }}
+          >
+            {/* Item glow */}
+            <div
+              className={`absolute inset-0 rounded-full blur-xl ${
+                it.kind === 'good' ? 'bg-green-400/30' : 'bg-red-400/30'
+              }`}
+            ></div>
+
+            {/* Item body */}
+            <div
+              className={`absolute inset-0 rounded-full flex items-center justify-center text-2xl sm:text-3xl
+              ${
+                it.kind === 'good'
+                  ? 'bg-gradient-to-br from-green-400/20 to-emerald-500/20 border-2 border-green-400/50'
+                  : 'bg-gradient-to-br from-red-500/20 to-pink-500/20 border-2 border-red-400/50'
+              } shadow-lg`}
+            >
+              <span
+                className={`drop-shadow-lg ${
+                  it.kind === 'good' ? 'animate-pulse' : ''
+                }`}
+              >
+                {itemEmoji}
+              </span>
+            </div>
+          </div>
+        );
+      })}
+
+      {/* Floating score effects */}
+      {effects.map((effect) => (
+        <div
+          key={effect.id}
+          className='absolute pointer-events-none z-30'
+          style={{
+            left: `${effect.x}px`,
+            top: `${effect.y}px`,
+            transform: 'translateX(-50%)',
+            color: effect.color,
+            animation: 'floatUp 1.5s ease-out forwards',
+          }}
+        >
+          <div className='font-bold text-xl drop-shadow-lg'>{effect.text}</div>
+        </div>
       ))}
+
+      {/* Instructions overlay on first play */}
+      {gameStarted && w > 0 && h > 0 && timeLeft === cfg.durationSec && (
+        <div
+          className='absolute inset-0 z-40 bg-black/50 backdrop-blur-sm flex items-center justify-center pointer-events-none'
+          style={{ animation: 'fadeOut 3s ease-out forwards' }}
+        >
+          <div className='text-center text-white'>
+            <p className='text-2xl font-bold mb-2'>
+              Trascina per muovere il cestino!
+            </p>
+            <p className='text-lg opacity-80'>Cattura gli oggetti buoni ✨</p>
+          </div>
+        </div>
+      )}
+
+      {/* Combo notification */}
+      {showCombo && combo >= 5 && (
+        <div className='fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-none animate-bounce'>
+          <div className='bg-gradient-to-r from-orange-500 to-red-500 text-white px-8 py-4 rounded-full shadow-2xl'>
+            <p className='text-2xl font-bold'>
+              🔥 SUPER COMBO x{1 + Math.floor(combo / 3)}! 🔥
+            </p>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes floatUp {
+          0% {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+          }
+          100% {
+            opacity: 0;
+            transform: translateX(-50%) translateY(-60px);
+          }
+        }
+
+        @keyframes fadeOut {
+          0% {
+            opacity: 1;
+          }
+          70% {
+            opacity: 1;
+          }
+          100% {
+            opacity: 0;
+          }
+        }
+
+        @keyframes shake {
+          0%,
+          100% {
+            transform: translateX(0);
+          }
+          25% {
+            transform: translateX(-10px);
+          }
+          75% {
+            transform: translateX(10px);
+          }
+        }
+      `}</style>
     </div>
   );
 };
