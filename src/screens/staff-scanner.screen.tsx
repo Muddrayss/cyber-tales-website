@@ -5,7 +5,6 @@ import React, {
   useState,
   useContext,
 } from 'react';
-import { PATH_MINIGAMES } from '@utils/navigate.utils';
 import {
   verifyStaffKey,
   previewToken,
@@ -115,7 +114,7 @@ const StaffScanner: React.FC = () => {
     const controls = await readerRef.current.decodeFromVideoDevice(
       devId,
       videoRef.current!,
-      async (res, err, contr) => {
+      async (res, _, contr) => {
         if (res) {
           const text = res.getText();
           contr.stop();

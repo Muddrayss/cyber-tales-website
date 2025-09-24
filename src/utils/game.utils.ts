@@ -1,5 +1,4 @@
 // @utils/game.utils.ts
-import type { ScoreRecord } from 'types/games.type.ts';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 /** Initialize Supabase client (ensure env variables are set). */

@@ -237,7 +237,7 @@ export default function WordGame({ difficulty, onGameOver }: Props) {
   const scoreRef = useRef(0);
   const [streak, setStreak] = useState(0);
   const [maxStreak, setMaxStreak] = useState(0);
-  const [wordsCompleted, setWordsCompleted] = useState(0);
+  const [_, setWordsCompleted] = useState(0);
 
   // Word state
   const usedAnswersRef = useRef<Set<string>>(new Set());

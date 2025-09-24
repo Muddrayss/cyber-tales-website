@@ -6,17 +6,8 @@ import type { GameKey, Difficulty } from 'types/games.type.ts';
 // navigation
 import { PATH_MINIGAMES } from '@utils/navigate.utils';
 
-// utils
-import { capitalize } from '@utils/general.utils';
-
 // contexts
 import { NavbarContext } from '@contexts/navbar.context';
-
-const TITLE: Record<GameKey, string> = {
-  catch: 'Catch & Clean',
-  memory: 'Memory Express',
-  word: 'Parola Segreta',
-};
 
 export default function SubmitScoreScreen() {
   const { navbarHeight } = useContext(NavbarContext);
