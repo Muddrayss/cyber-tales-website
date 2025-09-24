@@ -97,6 +97,10 @@ const CatchGame: React.FC<Props> = ({ difficulty, onGameOver }) => {
   const [h, setH] = useState(0);
 
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  useEffect(() => {
     const update = () => {
       if (!areaRef.current) return;
       setW(areaRef.current.clientWidth);
@@ -446,69 +450,84 @@ const CatchGame: React.FC<Props> = ({ difficulty, onGameOver }) => {
       </div>
 
       {/* HUD */}
-      <div className='absolute top-0 left-0 right-0 p-4 z-20 pointer-events-none'>
-        <div className='flex flex-wrap items-start justify-between gap-4'>
-          {/* Score & Stats */}
-          <div className='flex flex-wrap gap-3'>
-            <div className='bg-white/10 backdrop-blur-md rounded-2xl px-5 py-3 border border-white/20 shadow-xl'>
-              <div className='text-xs text-white/60 mb-1 uppercase tracking-wide'>
-                Punteggio
+      <div className='absolute top-0 left-0 right-0 p-2 sm:p-4 z-20 pointer-events-none'>
+        <div className='flex items-start justify-start gap-2'>
+          {/* Score & Stats - left side */}
+          <div className='flex gap-1.5 sm:gap-3 flex-shrink-0'>
+            <div className='bg-white/10 backdrop-blur-md rounded-xl sm:rounded-2xl px-2.5 py-1.5 sm:px-5 sm:py-3 border border-white/20 shadow-xl'>
+              <div className='text-[10px] sm:text-xs text-white/60 mb-0.5 sm:mb-1 uppercase tracking-wide'>
+                Score
               </div>
-              <div className='text-2xl font-bold text-white flex items-center gap-2'>
-                <span className='text-yellow-400'>⭐</span>
+              <div className='text-base sm:text-2xl font-bold text-white flex items-center gap-1 sm:gap-2'>
+                <span className='text-yellow-400 text-sm sm:text-base'>⭐</span>
                 {score}
               </div>
             </div>
-
-            {combo > 0 && (
-              <div
-                className={`bg-gradient-to-r ${
-                  combo >= 5
-                    ? 'from-orange-500/30 to-red-500/30'
-                    : 'from-cyan-500/20 to-blue-500/20'
-                } backdrop-blur-md rounded-2xl px-5 py-3 border ${
-                  combo >= 5 ? 'border-orange-400/50' : 'border-cyan-400/30'
-                } shadow-xl transition-all transform ${
-                  combo >= 5 ? 'scale-105' : ''
-                }`}
-              >
-                <div className='text-xs text-white/60 mb-1 uppercase tracking-wide'>
-                  Combo
-                </div>
-                <div className='text-2xl font-bold text-white flex items-center gap-2'>
-                  <span>{combo >= 5 ? '🔥' : '✨'}</span>×
-                  {1 + Math.floor(combo / 3)}
-                </div>
-              </div>
-            )}
           </div>
 
-          {/* Timer */}
-          <div className='flex-1 max-w-sm'>
-            <div className='bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 shadow-xl'>
-              <div className='flex items-center justify-between mb-2'>
-                <span className='text-xs text-white/60 uppercase tracking-wide'>
+          {combo > 0 && (
+            <div
+              className={`bg-gradient-to-r ${
+                combo >= 5
+                  ? 'from-orange-500/30 to-red-500/30'
+                  : 'from-cyan-500/20 to-blue-500/20'
+              } backdrop-blur-md rounded-xl sm:rounded-2xl px-2.5 py-1.5 sm:px-5 sm:py-3 border ${
+                combo >= 5 ? 'border-orange-400/50' : 'border-cyan-400/30'
+              } shadow-xl transition-all transform ${
+                combo >= 5 ? 'sm:scale-105' : ''
+              }`}
+            >
+              <div className='text-[10px] sm:text-xs text-white/60 mb-0.5 sm:mb-1 uppercase tracking-wide'>
+                Combo
+              </div>
+              <div className='text-base sm:text-2xl font-bold text-white'>
+                <span className='text-sm sm:text-base'>
+                  {combo >= 5 ? '🔥' : '✨'}
+                </span>
+                <span className='ml-0.5'>×{1 + Math.floor(combo / 3)}</span>
+              </div>
+            </div>
+          )}
+
+          <div className='flex-grow'></div>
+
+          {/* Timer - right side */}
+          <div className='bg-white/10 backdrop-blur-md rounded-xl sm:rounded-2xl px-2.5 py-1.5 sm:px-4 sm:py-2 border border-white/20 shadow-xl flex-shrink-0'>
+            <div className='flex items-center gap-2 sm:gap-3'>
+              <div className='hidden xs:block'>
+                <div className='text-[10px] sm:text-xs text-white/60 uppercase tracking-wide'>
                   Tempo
-                </span>
-                <span
-                  className={`text-lg font-bold ${
-                    timeWarning ? 'text-red-400 animate-pulse' : 'text-white'
-                  }`}
-                >
-                  {Math.ceil(timeLeft)}s
-                </span>
+                </div>
               </div>
               <TimeBar
                 value={timePercentage}
-                widthPx={280}
-                heightPx={8}
+                widthPx={w < 640 ? 80 : 120}
+                heightPx={w < 640 ? 6 : 8}
                 rounded
                 className={timeWarning ? 'animate-pulse' : ''}
               />
+              <span
+                className={`text-sm sm:text-lg font-bold ${
+                  timeWarning ? 'text-red-400 animate-pulse' : 'text-white'
+                }`}
+              >
+                {Math.ceil(timeLeft)}s
+              </span>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Combo notification */}
+      {showCombo && combo >= 5 && (
+        <div className='absolute top-1/2 left-1/2 transform -translate-y-1/2 -translate-x-1/2 z-50 pointer-events-none w-[min(90%,400px)]'>
+          <div className='bg-gradient-to-r from-orange-500 to-red-500 text-white px-8 py-4 rounded-full shadow-2xl animate-bounce'>
+            <p className='text-xs sm:text-lg md:text-2xl text-center font-bold'>
+              🔥 SUPER COMBO x{1 + Math.floor(combo / 3)}! 🔥
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Basket */}
       <div
@@ -619,17 +638,6 @@ const CatchGame: React.FC<Props> = ({ difficulty, onGameOver }) => {
               Trascina per muovere il cestino!
             </p>
             <p className='text-lg opacity-80'>Cattura gli oggetti buoni ✨</p>
-          </div>
-        </div>
-      )}
-
-      {/* Combo notification */}
-      {showCombo && combo >= 5 && (
-        <div className='fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-none animate-bounce'>
-          <div className='bg-gradient-to-r from-orange-500 to-red-500 text-white px-8 py-4 rounded-full shadow-2xl'>
-            <p className='text-2xl font-bold'>
-              🔥 SUPER COMBO x{1 + Math.floor(combo / 3)}! 🔥
-            </p>
           </div>
         </div>
       )}

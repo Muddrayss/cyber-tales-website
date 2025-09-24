@@ -71,21 +71,37 @@ export default function GameScreen() {
   if (!g) return null;
 
   return (
-    <div
-      className='mx-auto w-full px-4 py-6 h-[90svh]'
-      style={{ marginTop: navbarHeight }}
-    >
-      <div className='relative w-full h-full overflow-hidden rounded-2xl bg-black/40 ring-1 ring-white/10'>
-        {g === 'catch' && (
-          <CatchGame difficulty={d} onGameOver={handleGameOver} />
-        )}
-        {g === 'memory' && (
-          <MemoryGame difficulty={d} onGameOver={handleGameOver} />
-        )}
-        {g === 'word' && (
-          <WordGame difficulty={d} onGameOver={handleGameOver} />
-        )}
-      </div>
-    </div>
+    <>
+      {g === 'catch' && (
+        <div
+          className='mx-auto w-full px-4 py-6 h-[90svh]'
+          style={{ marginTop: navbarHeight }}
+        >
+          <div className='relative w-full h-full overflow-hidden rounded-2xl bg-black/40 ring-1 ring-white/10'>
+            <CatchGame difficulty={d} onGameOver={handleGameOver} />
+          </div>
+        </div>
+      )}
+      {g === 'memory' && (
+        <div
+          className='mx-auto w-full px-4 py-6 h-[90svh]'
+          style={{ marginTop: navbarHeight }}
+        >
+          <div className='relative w-full h-full overflow-hidden rounded-2xl bg-black/40 ring-1 ring-white/10'>
+            <MemoryGame difficulty={d} onGameOver={handleGameOver} />
+          </div>
+        </div>
+      )}
+      {g === 'word' && (
+        <div
+          className='mx-auto w-full px-4 py-6 h-[110svh] md:h-[90svh]'
+          style={{ marginTop: navbarHeight }}
+        >
+          <div className='relative w-full h-full overflow-hidden rounded-2xl bg-black/40 ring-1 ring-white/10'>
+            <WordGame difficulty={d} onGameOver={handleGameOver} />
+          </div>
+        </div>
+      )}
+    </>
   );
 }

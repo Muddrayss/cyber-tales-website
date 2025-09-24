@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import type { GameKey, Difficulty } from 'types/games.type.ts';
-import { submitScore } from '@utils/game.utils.ts';
+import { submitScoreWithEmail } from '@utils/score-submit.utils.ts';
 
 interface ScoreFormProps {
   game: GameKey;
@@ -26,18 +26,11 @@ const DIFFICULTY_COLORS = {
   pro: 'from-orange-400 to-red-500',
 };
 
-const GAME_EMOJIS: Record<string, string> = {
-  catch: '🧺',
-  memory: '🧠',
-  word: '🔤',
-};
-
 const ScoreForm: React.FC<ScoreFormProps> = ({
   game,
   difficulty,
   score,
   onReplay,
-  onLeaderboard,
   onExit,
   termsUrl = '/terms',
   privacyUrl = '/privacy',
@@ -66,8 +59,16 @@ const ScoreForm: React.FC<ScoreFormProps> = ({
     if (!canSubmit || !email) return;
 
     setStatus('saving');
-    const record = { game, difficulty, score, email, newsletter };
-    const success = await submitScore(record);
+    const success = await submitScoreWithEmail({
+      email,
+      agree, // terms
+      newsletter,
+      game,
+      difficulty,
+      score,
+      // optional:
+      // description: 'Testo libero o lasciamo il default lato funzione'
+    });
     setStatus(success ? 'saved' : 'error');
 
     if (success) {
@@ -78,7 +79,6 @@ const ScoreForm: React.FC<ScoreFormProps> = ({
 
   const difficultyGradient =
     DIFFICULTY_COLORS[difficulty] || DIFFICULTY_COLORS.standard;
-  const gameEmoji = GAME_EMOJIS[game] || '🎮';
 
   return (
     <div className='bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4'>

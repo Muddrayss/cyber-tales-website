@@ -5,7 +5,6 @@ export const PATH_ABOUT = `${PATH_HOME}about/`;
 export const PATH_MINIGAMES = `${PATH_HOME}minigames/`;
 export const PATH_MANUAL = `${PATH_HOME}manual/`;
 export const PATH_MUSIC = `${PATH_HOME}music/`;
-// export const PATH_INSTAGRAM = `${PATH_HOME}instagram/`; --- DEPRECTATED ---
 export const PATH_CREDITS = `${PATH_HOME}credits/`;
 export const PATH_STAFF_SCANNER = `${PATH_HOME}staff-scanner/`;
 export const PATH_NOT_FOUND = `${PATH_HOME}not-found/`;
@@ -29,11 +28,6 @@ export const navigateToManual = (navigator: NavigateFunction) => {
 export const navigateToMusic = (navigator: NavigateFunction) => {
   navigator(PATH_MUSIC);
 };
-
-// DEPRECTATED:
-// export const navigateToInstagram = (navigator: NavigateFunction) => {
-//   navigator(PATH_INSTAGRAM);
-// };
 
 export const navigateToCredits = (navigator: NavigateFunction) => {
   navigator(PATH_CREDITS);

@@ -9,7 +9,7 @@ import MinigamesDifficultySelection from './screens/minigames/difficulty-selecti
 import MinigamesGame from './screens/minigames/game.screen';
 import UserGateScreen from '@screens/minigames/user-gate.screen';
 import SubmitScoreScreen from '@screens/minigames/submit-score.screen';
-// import StaffScanner from './screens/staff-scanner.screen';
+import StaffScanner from './screens/staff-scanner.screen';
 import ManualScreen from './screens/manual.screen';
 import Credits from './screens/credits.screen';
 import Music from './screens/music.screen';
@@ -32,7 +32,7 @@ function App() {
         </Route>
         <Route path='/manual' element={<ManualScreen />} />
         <Route path='/music' element={<Music />} />
-        {/* <Route path='/staff-scanner' element={<StaffScanner />} /> */}
+        <Route path='/staff-scanner' element={<StaffScanner />} />
         <Route path='/credits' element={<Credits />} />
       </Route>
     </Routes>

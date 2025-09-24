@@ -37,7 +37,6 @@ export default function SubmitScoreScreen() {
         onReplay={() =>
           navigate(`${PATH_MINIGAMES}${game}/${difficulty}`, { replace: true })
         }
-        onLeaderboard={() => navigate(`${PATH_MINIGAMES}${game}`)}
         onExit={() => navigate(PATH_MINIGAMES)}
       />
     </div>

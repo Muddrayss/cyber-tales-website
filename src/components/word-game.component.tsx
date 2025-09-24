@@ -258,6 +258,10 @@ export default function WordGame({ difficulty, onGameOver }: Props) {
   const finishedRef = useRef(false);
 
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  useEffect(() => {
     if (finishedRef.current || phase === 'gameOver') return;
 
     const tick = () => {
@@ -535,64 +539,65 @@ export default function WordGame({ difficulty, onGameOver }: Props) {
       </div>
 
       {/* HUD */}
-      <div className='absolute inset-x-0 top-0 z-10 p-3 sm:p-4'>
-        <div className='flex items-center justify-between gap-3'>
-          <div className='flex gap-3'>
-            {/* Score */}
-            <div className='bg-white/10 backdrop-blur-md rounded-2xl px-4 py-2 border border-white/20'>
-              <div className='text-xs text-white/60 uppercase tracking-wide'>
+      <div className='absolute inset-x-0 top-0 z-10 p-2 sm:p-4'>
+        <div className='flex items-start justify-start gap-2'>
+          {/* Score & Stats - left side */}
+          <div className='flex gap-1.5 sm:gap-3 flex-shrink-0'>
+            <div className='bg-white/10 backdrop-blur-md rounded-xl sm:rounded-2xl px-2.5 py-1.5 sm:px-5 sm:py-3 border border-white/20 shadow-xl'>
+              <div className='text-[10px] sm:text-xs text-white/60 mb-0.5 sm:mb-1 uppercase tracking-wide'>
                 Score
               </div>
-              <div className='text-xl font-bold text-white flex items-center gap-1'>
-                <span className='text-yellow-400'>⭐</span>
+              <div className='text-base sm:text-2xl font-bold text-white flex items-center gap-1 sm:gap-2'>
+                <span className='text-yellow-400 text-sm sm:text-base'>⭐</span>
                 {Math.round(score)}
               </div>
             </div>
 
-            {/* Streak */}
             {streak > 0 && (
               <div
                 className={`bg-gradient-to-r ${
                   streak >= 5
                     ? 'from-orange-500/30 to-red-500/30'
                     : 'from-cyan-500/20 to-blue-500/20'
-                } backdrop-blur-md rounded-2xl px-4 py-2 border ${
+                } backdrop-blur-md rounded-xl sm:rounded-2xl px-2.5 py-1.5 sm:px-5 sm:py-3 border ${
                   streak >= 5 ? 'border-orange-400/50' : 'border-cyan-400/30'
+                } shadow-xl transition-all transform ${
+                  streak >= 5 ? 'sm:scale-105' : ''
                 }`}
               >
-                <div className='text-xs text-white/60 uppercase tracking-wide'>
-                  Streak
+                <div className='text-[10px] sm:text-xs text-white/60 mb-0.5 sm:mb-1 uppercase tracking-wide'>
+                  Combo
                 </div>
-                <div className='text-xl font-bold text-white'>
-                  {streak >= 5 ? '🔥' : '✨'} ×{streak}
+                <div className='text-base sm:text-2xl font-bold text-white'>
+                  <span className='text-sm sm:text-base'>
+                    {streak >= 5 ? '🔥' : '✨'}
+                  </span>
+                  <span className='ml-0.5'>×{streak}</span>
                 </div>
               </div>
             )}
-
-            {/* Words completed */}
-            <div className='bg-white/10 backdrop-blur-md rounded-2xl px-4 py-2 border border-white/20'>
-              <div className='text-xs text-white/60 uppercase tracking-wide'>
-                Parole
-              </div>
-              <div className='text-xl font-bold text-purple-400'>
-                {wordsCompleted}
-              </div>
-            </div>
           </div>
 
-          {/* Timer */}
-          <div className='bg-white/10 backdrop-blur-md rounded-2xl px-4 py-2 border border-white/20'>
-            <div className='flex items-center gap-3'>
+          <div className='flex-grow'></div>
+
+          {/* Timer - right side */}
+          <div className='bg-white/10 backdrop-blur-md rounded-xl sm:rounded-2xl px-2.5 py-1.5 sm:px-4 sm:py-2 border border-white/20 shadow-xl flex-shrink-0'>
+            <div className='flex items-center gap-2 sm:gap-3'>
+              <div className='hidden xs:block'>
+                <div className='text-[10px] sm:text-xs text-white/60 uppercase tracking-wide'>
+                  Tempo
+                </div>
+              </div>
               <TimeBar
                 value={pct}
-                widthPx={180}
-                heightPx={12}
+                widthPx={window.innerWidth < 640 ? 80 : 120}
+                heightPx={window.innerWidth < 640 ? 6 : 8}
                 rounded
                 className={timeWarning ? 'animate-pulse' : ''}
               />
               <span
-                className={`text-sm font-bold ${
-                  timeWarning ? 'text-red-400' : 'text-white/80'
+                className={`text-sm sm:text-lg font-bold ${
+                  timeWarning ? 'text-red-400 animate-pulse' : 'text-white'
                 }`}
               >
                 {Math.ceil(timeLeft)}s

@@ -9,6 +9,7 @@ import {
   PATH_CREDITS,
   PATH_MINIGAMES,
   PATH_ABOUT,
+  PATH_STAFF_SCANNER,
 } from '../utils/navigate.utils';
 
 const Header: React.FC = () => {
@@ -45,6 +46,7 @@ const Header: React.FC = () => {
     { content: 'Minigiochi', path: PATH_MINIGAMES },
     { content: 'Manuale', path: PATH_MANUAL },
     { content: 'Musica', path: PATH_MUSIC },
+    { content: 'Staff', path: PATH_STAFF_SCANNER },
     { content: 'Crediti', path: PATH_CREDITS },
   ];
 

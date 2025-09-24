@@ -203,6 +203,10 @@ export default function MemoryGame({ difficulty, onGameOver }: Props) {
   }, [conf.cols, conf.rows]);
 
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  useEffect(() => {
     const ro = new ResizeObserver(recomputeFit);
     if (areaRef.current) ro.observe(areaRef.current);
     const id = setInterval(recomputeFit, 250); // fallback su HUD dinamico
@@ -336,35 +340,84 @@ export default function MemoryGame({ difficulty, onGameOver }: Props) {
   return (
     <div className='relative w-full h-full bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 overflow-hidden'>
       {/* HUD (misurato con ref per il fit) */}
-      <div ref={hudRef} className='absolute inset-x-0 top-0 z-10 p-3 sm:p-4'>
-        <div className='flex items-center justify-between gap-3'>
-          <div className='bg-white/10 backdrop-blur-md rounded-2xl px-4 py-2 border border-white/20'>
-            <div className='text-xs text-white/60 mb-0.5'>PUNTEGGIO</div>
-            <div className='text-xl font-bold text-white'>
-              ⭐ {Math.round(score)}
+      <div ref={hudRef} className='absolute inset-x-0 top-0 z-10 p-2 sm:p-4'>
+        <div className='flex items-start justify-start gap-2'>
+          {/* Score & Stats - left side */}
+          <div className='flex gap-1.5 sm:gap-3 flex-shrink-0'>
+            <div className='bg-white/10 backdrop-blur-md rounded-xl sm:rounded-2xl px-2.5 py-1.5 sm:px-5 sm:py-3 border border-white/20 shadow-xl'>
+              <div className='text-[10px] sm:text-xs text-white/60 mb-0.5 sm:mb-1 uppercase tracking-wide'>
+                Score
+              </div>
+              <div className='text-base sm:text-2xl font-bold text-white flex items-center gap-1 sm:gap-2'>
+                <span className='text-yellow-400 text-sm sm:text-base'>⭐</span>
+                {Math.round(score)}
+              </div>
             </div>
+
+            {streak > 0 && (
+              <div
+                className={`bg-gradient-to-r ${
+                  streak >= 3
+                    ? 'from-orange-500/30 to-red-500/30'
+                    : 'from-cyan-500/20 to-blue-500/20'
+                } backdrop-blur-md rounded-xl sm:rounded-2xl px-2.5 py-1.5 sm:px-5 sm:py-3 border ${
+                  streak >= 3 ? 'border-orange-400/50' : 'border-cyan-400/30'
+                } shadow-xl transition-all transform ${
+                  streak >= 3 ? 'sm:scale-105' : ''
+                }`}
+              >
+                <div className='text-[10px] sm:text-xs text-white/60 mb-0.5 sm:mb-1 uppercase tracking-wide'>
+                  Combo
+                </div>
+                <div className='text-base sm:text-2xl font-bold text-white'>
+                  <span className='text-sm sm:text-base'>
+                    {streak >= 3 ? '🔥' : '✨'}
+                  </span>
+                  <span className='ml-0.5'>×{streak}</span>
+                </div>
+              </div>
+            )}
           </div>
-          <div className='bg-white/10 backdrop-blur-md rounded-2xl px-4 py-2 border border-white/20'>
-            <div className='flex items-center gap-3'>
+
+          <div className='flex-grow'></div>
+
+          {/* Timer - right side */}
+          <div className='bg-white/10 backdrop-blur-md rounded-xl sm:rounded-2xl px-2.5 py-1.5 sm:px-4 sm:py-2 border border-white/20 shadow-xl flex-shrink-0'>
+            <div className='flex items-center gap-2 sm:gap-3'>
+              <div className='hidden xs:block'>
+                <div className='text-[10px] sm:text-xs text-white/60 uppercase tracking-wide'>
+                  Tempo
+                </div>
+              </div>
               <TimeBar
                 value={pct}
-                widthPx={180}
-                heightPx={12}
+                widthPx={window.innerWidth < 640 ? 80 : 120}
+                heightPx={window.innerWidth < 640 ? 6 : 8}
                 rounded
                 className={timeWarning ? 'animate-pulse' : ''}
               />
+              <span
+                className={`text-sm sm:text-lg font-bold ${
+                  timeWarning ? 'text-red-400 animate-pulse' : 'text-white'
+                }`}
+              >
+                {Math.ceil(timeLeft)}s
+              </span>
             </div>
           </div>
         </div>
 
-        <div className='mt-3 bg-white/10 backdrop-blur-md rounded-xl p-2 border border-white/20'>
-          <div className='flex items-center justify-between mb-1 px-1'>
-            <span className='text-xs text-white/60'>Round {round}</span>
-            <span className='text-xs text-cyan-400 font-semibold'>
+        {/* Progress bar */}
+        <div className='mt-2 bg-white/10 backdrop-blur-md rounded-lg sm:rounded-xl p-1.5 sm:p-2 border border-white/20'>
+          <div className='flex items-center justify-between mb-0.5 sm:mb-1 px-1'>
+            <span className='text-[10px] sm:text-xs text-white/60'>
+              Round {round}
+            </span>
+            <span className='text-[10px] sm:text-xs text-cyan-400 font-semibold'>
               {matches}/{totalPairs} coppie
             </span>
           </div>
-          <div className='w-full h-1.5 bg-black/30 rounded-full overflow-hidden'>
+          <div className='w-full h-1 sm:h-1.5 bg-black/30 rounded-full overflow-hidden'>
             <div
               className='h-full bg-gradient-to-r from-green-400 to-emerald-400 rounded-full transition-all duration-500'
               style={{ width: `${(matches / totalPairs) * 100}%` }}
@@ -450,12 +503,15 @@ export default function MemoryGame({ difficulty, onGameOver }: Props) {
 
       {(busy || phase === 'quiz') && <div className='absolute inset-0 z-20' />}
 
+      {/* Combo notification */}
       {showCombo && streak >= 3 && (
-        <div className='fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-none animate-bounce'>
-          <div className='bg-gradient-to-r from-orange-500 to-red-500 text-white px-8 py-4 rounded-full shadow-2xl'>
-            <p className='text-2xl font-bold'>🔥 COMBO x{streak}! 🔥</p>
+        <div className='absolute top-1/2 left-1/2 transform -translate-y-1/2 -translate-x-1/2 z-50 pointer-events-none w-[min(90%,400px)]'>
+          <div className='bg-gradient-to-r from-orange-500 to-red-500 text-white px-8 py-4 rounded-full shadow-2xl animate-bounce'>
+            <p className='text-xs sm:text-lg md:text-2xl text-center font-bold'>
+              <p className='text-2xl font-bold'>🔥 COMBO x{streak}! 🔥</p>
+            </p>
           </div>
-        </div>
+        </div>  
       )}
 
       {phase === 'quiz' && quiz && (
