@@ -120,6 +120,19 @@ const StaffScanner: React.FC = () => {
       navigator.mediaDevices?.removeEventListener?.('devicechange', handler);
   }, [loadDevices]);
 
+  useEffect(() => {
+    if (!cameraOn) return;
+    // riavvia lo stream sul nuovo device
+    (async () => {
+      stopScan();
+      // piccola pausa per rilasciare le tracce
+      setTimeout(() => {
+        startScan();
+      }, 50);
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDeviceId]);
+
   // avvia scanning
   const startScan = useCallback(async () => {
     if (cameraOn) return;
@@ -170,6 +183,8 @@ const StaffScanner: React.FC = () => {
           }
         );
       }
+
+      await videoRef.current?.play();
 
       controlsRef.current = controls;
       setCameraOn(true);
@@ -355,12 +370,13 @@ const StaffScanner: React.FC = () => {
               />
             </div>
 
-            <div className='w-full md:w-80'>
+            <div className='w-full md:w-80 h-64 md:h-56'>
               <video
                 ref={videoRef}
-                className='w-full rounded-lg border border-white/10'
+                className='w-full h-full object-cover bg-black rounded-lg border border-white/10 block'
                 muted
                 playsInline
+                autoPlay
               />
             </div>
           </div>
