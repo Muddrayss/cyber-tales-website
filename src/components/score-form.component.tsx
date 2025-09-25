@@ -302,9 +302,9 @@ const ScoreForm: React.FC<ScoreFormProps> = ({
 
       {/* Success animation */}
       {showSuccess && (
-        <div className='fixed inset-0 pointer-events-none flex items-center justify-center z-50'>
+        <div className='fixed inset-0 pointer-events-none flex items-center justify-center z-50 w-[min(90%,400px)]'>
           <div className='bg-gradient-to-r from-green-400 to-emerald-500 text-white px-8 py-4 rounded-full shadow-2xl animate-bounce'>
-            <p className='text-xl font-bold'>
+            <p className='text-xs sm:text-lg md:text-2xl text-center'>
               🎉 Punteggio salvato con successo!
             </p>
           </div>

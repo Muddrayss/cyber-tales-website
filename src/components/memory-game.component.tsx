@@ -3,6 +3,26 @@ import type { Difficulty } from 'types/games.type.ts';
 import TimeBar from '@components/time-bar.component.tsx';
 import { clamp } from '@utils/game.utils.ts';
 
+// Import delle icone SVG
+import RobotIcon from '@assets/games/memory/robot.svg';
+import CyberMondayIcon from '@assets/games/memory/cyber-monday.svg';
+import ShieldIcon from '@assets/games/memory/shield.svg';
+import HackerIcon from '@assets/games/memory/hacker.svg';
+import LockedKeyIcon from '@assets/games/memory/locked-key.svg';
+import VirusIcon from '@assets/games/memory/virus.svg';
+import UserSecretIcon from '@assets/games/memory/user-secret.svg';
+import SecurityCameraIcon from '@assets/games/memory/security-camera.svg';
+import MobileIcon from '@assets/games/memory/mobile.svg';
+import VpnIcon from '@assets/games/memory/vpn.svg';
+import SecurePcIcon from '@assets/games/memory/secure-pc.svg';
+import MicrophoneIcon from '@assets/games/memory/microphone.svg';
+import CpuIcon from '@assets/games/memory/cpu.svg';
+import KeyboardIcon from '@assets/games/memory/keyboard.svg';
+import MouseIcon from '@assets/games/memory/mouse.svg';
+import EnvelopeIcon from '@assets/games/memory/envelope.svg';
+import GlobeIcon from '@assets/games/memory/globe.svg';
+import CopyrightIcon from '@assets/games/memory/copyright.svg';
+
 type Props = {
   difficulty: Difficulty;
   onGameOver: (finalScore: number) => void;
@@ -10,7 +30,7 @@ type Props = {
 
 type Card = {
   id: number;
-  symbol: string;
+  icon: string;
   pairKey: number;
   flipped: boolean;
   matched: boolean;
@@ -60,37 +80,26 @@ const CONF: Record<Difficulty, Conf> = {
   },
 };
 
-const SYMBOLS = [
-  '🛡️',
-  '🔐',
-  '🧠',
-  '💡',
-  '📱',
-  '🛰️',
-  '🧪',
-  '🧰',
-  '🧬',
-  '🪐',
-  '🚀',
-  '🪫',
-  '🔌',
-  '🧯',
-  '📡',
-  '💾',
-  '🧲',
-  '🔭',
-  '🎯',
-  '🔍',
-  '🧱',
-  '⚙️',
-  '🔧',
-  '🧵',
-  '🧩',
-  '🖱️',
-  '⌨️',
-  '🖥️',
-  '📶',
-  '🗂️',
+// Array di icone SVG importate
+const ICONS = [
+  RobotIcon,
+  CyberMondayIcon,
+  ShieldIcon,
+  HackerIcon,
+  LockedKeyIcon,
+  VirusIcon,
+  UserSecretIcon,
+  SecurityCameraIcon,
+  MobileIcon,
+  VpnIcon,
+  SecurePcIcon,
+  MicrophoneIcon,
+  CpuIcon,
+  KeyboardIcon,
+  MouseIcon,
+  EnvelopeIcon,
+  GlobeIcon,
+  CopyrightIcon,
 ];
 
 type Quiz = { q: string; choices: string[]; correct: number };
@@ -120,6 +129,133 @@ const QUIZ_BANK: Quiz[] = [
     choices: ['Decorare', 'Aumentare sicurezza', 'Giocare'],
     correct: 1,
   },
+  {
+    q: 'Quando dovresti aggiornare il sistema e le app?',
+    choices: [
+      'Appena esce un aggiornamento',
+      'Mai',
+      'Solo se qualcosa non funziona',
+    ],
+    correct: 0,
+  },
+  {
+    q: 'Wi-Fi pubblico: cosa NON dovresti fare?',
+    choices: [
+      'Accedere alla banca senza protezioni',
+      'Leggere notizie',
+      'Controllare il meteo',
+    ],
+    correct: 0,
+  },
+  {
+    q: 'Ti scrive “assistenza” e chiede la password: che fai?',
+    choices: ['La invio', 'Ne mando metà', 'Non la do mai e segnalo'],
+    correct: 2,
+  },
+  {
+    q: 'Qual è il modo migliore di gestire le password?',
+    choices: [
+      'Usare la stessa ovunque',
+      'Password uniche + password manager',
+      'Scriverle su un post-it',
+    ],
+    correct: 1,
+  },
+  {
+    q: 'Cosa fa un antivirus aggiornato?',
+    choices: [
+      'Rende il PC più lento',
+      'Aiuta a rilevare malware',
+      'Blocca Internet',
+    ],
+    correct: 1,
+  },
+  {
+    q: 'Prima di installare un’app…',
+    choices: [
+      'Controllo permessi e recensioni',
+      'La installo e vedo',
+      'Scarico APK casuali',
+    ],
+    correct: 0,
+  },
+  {
+    q: 'Ricevi “fattura.zip” da sconosciuto: cosa fai?',
+    choices: [
+      'La apro subito',
+      'Verifico mittente / scansiono',
+      'La inoltro agli amici',
+    ],
+    correct: 1,
+  },
+  {
+    q: 'Cos’è un OTP?',
+    choices: [
+      'Una password riutilizzabile',
+      'Un codice usa-e-getta',
+      'Un tipo di virus',
+    ],
+    correct: 1,
+  },
+  {
+    q: 'Il profilo social è pubblico per default: cosa fai?',
+    choices: [
+      'Condivido tutto',
+      'Imposto privacy e limito info',
+      'Accetto tutte le richieste',
+    ],
+    correct: 1,
+  },
+  {
+    q: 'Per riconoscere un sito falso…',
+    choices: [
+      'Controllo URL, HTTPS e contenuti',
+      'Guardo solo i colori',
+      'Se è su Google è sicuro',
+    ],
+    correct: 0,
+  },
+  {
+    q: 'Hai perso il telefono: qual è la prima mossa?',
+    choices: [
+      'Aspetto e spero torni',
+      'Blocca/localizza e cambia password',
+      'Posto una story',
+    ],
+    correct: 1,
+  },
+  {
+    q: 'Che cos’è il ransomware?',
+    choices: ['Un gioco online', 'Malware che chiede riscatto', 'Una VPN'],
+    correct: 1,
+  },
+  {
+    q: 'Trovi una chiavetta USB per strada: cosa fai?',
+    choices: [
+      'La collego per curiosità',
+      'La butto o la analizzo in sandbox',
+      'La regalo a un amico',
+    ],
+    correct: 1,
+  },
+  {
+    q: 'Messaggio “hai vinto!” con link: come reagisci?',
+    choices: [
+      'Clicco e compilo',
+      'Ignoro/SEGNALO: probabile truffa',
+      'Rispondo con i miei dati',
+    ],
+    correct: 1,
+  },
+  {
+    q: 'Backup sicuri sono…',
+    choices: [
+      'Unica copia sul PC',
+      'Più copie (offline/cloud)',
+      'Nessun backup',
+    ],
+    correct: 1,
+  },
 ];
 
 function shuffle<T>(arr: T[]): T[] {
@@ -132,13 +268,13 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 function buildDeck(totalPairs: number, autoPairs: number): Card[] {
-  const symbols = SYMBOLS.slice(0, totalPairs);
+  const icons = ICONS.slice(0, totalPairs);
   let id = 1;
-  const pairs: Card[] = symbols.flatMap((sym, idx) => {
+  const pairs: Card[] = icons.flatMap((icon, idx) => {
     const pairKey = idx + 1;
     return [
-      { id: id++, symbol: sym, pairKey, flipped: false, matched: false },
-      { id: id++, symbol: sym, pairKey, flipped: false, matched: false },
+      { id: id++, icon, pairKey, flipped: false, matched: false },
+      { id: id++, icon, pairKey, flipped: false, matched: false },
     ];
   });
   const deck = shuffle(pairs);
@@ -477,22 +613,28 @@ export default function MemoryGame({ difficulty, onGameOver }: Props) {
                       show ? 'opacity-0 rotate-y-180' : 'opacity-100'
                     }`}
                   >
-                    <span className='text-2xl md:text-3xl opacity-60'>🎴</span>
+                    <div className='w-12 h-12 bg-gradient-to-br from-cyan-400 to-purple-500 rounded-lg shadow-lg flex items-center justify-center'>
+                      <span className='text-white text-2xl font-bold'>?</span>
+                    </div>
                   </div>
                   <div
                     className={`absolute inset-0 grid place-items-center transition-all duration-300 ${
                       show ? 'opacity-100 rotate-y-0' : 'opacity-0 rotate-y-180'
                     }`}
                   >
-                    <span
-                      className={`text-xl md:text-2xl lg:text-3xl ${
+                    <img
+                      src={c.icon}
+                      alt='Card icon'
+                      className={`w-10 h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 ${
                         c.matched
                           ? 'drop-shadow-[0_0_20px_rgba(52,211,153,0.8)] animate-pulse'
                           : ''
                       } ${isFlipping && !c.matched ? 'animate-bounce' : ''}`}
-                    >
-                      {c.symbol}
-                    </span>
+                      style={{
+                        filter:
+                          'brightness(0) saturate(100%) invert(83%) sepia(7%) saturate(2227%) hue-rotate(332deg) brightness(100%) contrast(106%)',
+                      }}
+                    />
                   </div>
                 </button>
               );
@@ -507,11 +649,11 @@ export default function MemoryGame({ difficulty, onGameOver }: Props) {
       {showCombo && streak >= 3 && (
         <div className='absolute top-1/2 left-1/2 transform -translate-y-1/2 -translate-x-1/2 z-50 pointer-events-none w-[min(90%,400px)]'>
           <div className='bg-gradient-to-r from-orange-500 to-red-500 text-white px-8 py-4 rounded-full shadow-2xl animate-bounce'>
-            <p className='text-xs sm:text-lg md:text-2xl text-center font-bold'>
-              <p className='text-2xl font-bold'>🔥 COMBO x{streak}! 🔥</p>
+            <p className='text-2xl text-center font-bold'>
+              🔥 COMBO x{streak}! 🔥
             </p>
           </div>
-        </div>  
+        </div>
       )}
 
       {phase === 'quiz' && quiz && (

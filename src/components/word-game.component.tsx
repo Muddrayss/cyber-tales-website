@@ -37,6 +37,33 @@ const BANK: Record<Difficulty, Word[]> = {
       category: '📧 Comunicazione',
     },
     { answer: 'CODE', hint: 'Password o programmazione', category: '💻 Tech' },
+    { answer: 'PIN', hint: 'Codice a 4/6 cifre', category: '🔐 Accesso' },
+    { answer: 'APP', hint: 'Programma sul telefono', category: '💻 Tech' },
+    {
+      answer: 'UPDATE',
+      hint: 'Aggiornamento per restare sicuri',
+      category: '🔒 Sicurezza',
+    },
+    {
+      answer: 'AVATAR',
+      hint: 'Immagine del profilo',
+      category: '🖼️ Profilo',
+    },
+    {
+      answer: 'BROWSER',
+      hint: 'App per navigare su Internet',
+      category: '🌐 Web',
+    },
+    {
+      answer: 'NICKNAME',
+      hint: 'Nome pubblico che scegli',
+      category: '🧑‍🚀 Identità',
+    },
+    {
+      answer: 'CHAT',
+      hint: 'Messaggi in tempo reale',
+      category: '📧 Comunicazione',
+    },
   ],
   standard: [
     {
@@ -71,6 +98,41 @@ const BANK: Record<Difficulty, Word[]> = {
       hint: 'Distribuisce internet a casa',
       category: '📡 Network',
     },
+    {
+      answer: 'VPN',
+      hint: 'Cripta il traffico e maschera l’IP',
+      category: '🛡️ Protezione',
+    },
+    {
+      answer: 'ANTIVIRUS',
+      hint: 'Scansiona e blocca minacce',
+      category: '🛡️ Protezione',
+    },
+    {
+      answer: 'TROJAN',
+      hint: 'Si finge legittimo per infettare',
+      category: '🦠 Minacce',
+    },
+    {
+      answer: 'SPYWARE',
+      hint: 'Spia la tua attività',
+      category: '🦠 Minacce',
+    },
+    {
+      answer: 'HASHING',
+      hint: 'Impronta unidirezionale dei dati',
+      category: '🔒 Sicurezza',
+    },
+    {
+      answer: 'PATCH',
+      hint: 'Correzione di sicurezza',
+      category: '🔧 Manutenzione',
+    },
+    {
+      answer: 'PROXY',
+      hint: 'Intermediario per le richieste web',
+      category: '🌐 Web',
+    },
   ],
   pro: [
     {
@@ -104,6 +166,41 @@ const BANK: Record<Difficulty, Word[]> = {
       answer: 'BLOCKCHAIN',
       hint: 'Tecnologia delle crypto',
       category: '⛓️ Tech',
+    },
+    {
+      answer: 'BOTNET',
+      hint: 'Rete di dispositivi infetti controllati',
+      category: '💰 Attacchi',
+    },
+    {
+      answer: 'ROOTKIT',
+      hint: 'Nasconde la presenza del malware',
+      category: '🦠 Minacce',
+    },
+    {
+      answer: 'ZERODAY',
+      hint: 'Falla sconosciuta, senza patch',
+      category: '💰 Attacchi',
+    },
+    {
+      answer: 'MITM',
+      hint: 'Attacco “uomo-in-mezzo”',
+      category: '💰 Attacchi',
+    },
+    {
+      answer: 'SQLINJECTION',
+      hint: 'Comandi malevoli nel database',
+      category: '💰 Attacchi',
+    },
+    {
+      answer: 'AIRGAP',
+      hint: 'Rete isolata senza connessione internet',
+      category: '📦 Sicurezza',
+    },
+    {
+      answer: 'IDS',
+      hint: 'Sistema che rileva intrusioni',
+      category: '🛡️ Protezione',
     },
   ],
 };
