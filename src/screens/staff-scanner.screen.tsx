@@ -91,12 +91,34 @@ const StaffScanner: React.FC = () => {
   }, []);
 
   // carica lista device video
-  const loadDevices = useCallback(async () => {
+  const loadDevices = useCallback(async (): Promise<MediaDeviceInfo[]> => {
+    // 1) prova a chiedere permesso per far apparire la lista device
+    try {
+      const tmp = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: 'environment' } },
+        audio: false,
+      });
+      // stop immediato: ci serve solo per sbloccare enumerateDevices()
+      tmp.getTracks().forEach((t) => t.stop());
+    } catch (e) {
+      // Se l'utente aveva già negato in passato, qui può fallire.
+      // Continuiamo comunque: se non ci sono device, lo gestiamo dopo.
+    }
+
+    // 2) ora enumeriamo
     const devs = await BrowserQRCodeReader.listVideoInputDevices();
     setDevices(devs);
     const pick = pickBackCamera(devs);
-    setSelectedDeviceId(pick);
+    setSelectedDeviceId(pick || null);
+    return devs;
   }, []);
+
+  useEffect(() => {
+    const handler = () => loadDevices();
+    navigator.mediaDevices?.addEventListener?.('devicechange', handler);
+    return () =>
+      navigator.mediaDevices?.removeEventListener?.('devicechange', handler);
+  }, [loadDevices]);
 
   // avvia scanning
   const startScan = useCallback(async () => {
@@ -104,37 +126,70 @@ const StaffScanner: React.FC = () => {
     setResult(null);
     if (!readerRef.current) readerRef.current = new BrowserQRCodeReader();
 
-    await loadDevices();
-    const devId = selectedDeviceId || pickBackCamera(devices);
-    if (!devId) {
-      alert('Nessuna camera disponibile');
-      return;
-    }
+    const devs = await loadDevices();
+    let devId = selectedDeviceId || pickBackCamera(devs);
 
-    const controls = await readerRef.current.decodeFromVideoDevice(
-      devId,
-      videoRef.current!,
-      async (res, _, contr) => {
-        if (res) {
-          const text = res.getText();
-          contr.stop();
-          setCameraOn(false);
-          const tok = extractToken(text);
-          if (!tok) {
-            setResult({ ok: false, error: 'QR non valido' });
-            return;
+    try {
+      let controls: IScannerControls | null = null;
+
+      if (devId) {
+        controls = await readerRef.current.decodeFromVideoDevice(
+          devId,
+          videoRef.current!,
+          async (res, _, contr) => {
+            if (!res) return;
+            const text = res.getText();
+            contr.stop();
+            setCameraOn(false);
+            const tok = extractToken(text);
+            if (!tok) return setResult({ ok: false, error: 'QR non valido' });
+            setLastToken(tok);
+            setLoading(true);
+            const pr = await previewToken(tok, staffKey);
+            setResult(pr);
+            setLoading(false);
           }
-          setLastToken(tok);
-          setLoading(true);
-          const pr = await previewToken(tok, staffKey);
-          setResult(pr);
-          setLoading(false);
-        }
+        );
+      } else {
+        // ✅ Fallback: nessun device visibile? prova con constraints (prompt sicuro)
+        controls = await readerRef.current.decodeFromConstraints(
+          { video: { facingMode: { ideal: 'environment' } } },
+          videoRef.current!,
+          async (res, _, contr) => {
+            if (!res) return;
+            const text = res.getText();
+            contr.stop();
+            setCameraOn(false);
+            const tok = extractToken(text);
+            if (!tok) return setResult({ ok: false, error: 'QR non valido' });
+            setLastToken(tok);
+            setLoading(true);
+            const pr = await previewToken(tok, staffKey);
+            setResult(pr);
+            setLoading(false);
+          }
+        );
       }
-    );
-    controlsRef.current = controls;
-    setCameraOn(true);
-  }, [cameraOn, staffKey, devices, selectedDeviceId, loadDevices]);
+
+      controlsRef.current = controls;
+      setCameraOn(true);
+    } catch (err: any) {
+      // Messaggi utili per permessi negati o policy bloccante
+      const msg = String(err?.message || err);
+      if (/permission|denied/i.test(msg)) {
+        alert(
+          'Permesso fotocamera negato. Tocca l’icona del lucchetto nella barra dell’URL e abilita la camera per questo sito.'
+        );
+      } else if (/notallowederror|notfounderror|overconstrained/i.test(msg)) {
+        alert(
+          'Nessuna camera disponibile o bloccata dalle policy del browser/origine.'
+        );
+      } else {
+        alert('Errore apertura camera: ' + msg);
+      }
+      setCameraOn(false);
+    }
+  }, [cameraOn, staffKey, selectedDeviceId, loadDevices]);
 
   const stopScan = useCallback(() => {
     controlsRef.current?.stop();
@@ -286,6 +341,7 @@ const StaffScanner: React.FC = () => {
                   <input
                     type='file'
                     accept='image/*'
+                    capture='environment'
                     className='hidden'
                     onChange={onUploadImage}
                   />
