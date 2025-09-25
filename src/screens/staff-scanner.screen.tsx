@@ -19,7 +19,6 @@ import { NavbarContext } from '@contexts/navbar.context';
 const LS_KEY = 'Xor55@';
 
 function pickBackCamera(devs: MediaDeviceInfo[]): string | null {
-  // scegli "back"/"rear" se presente, altrimenti la prima
   const lower = devs.map((d) => ({ d, name: (d.label || '').toLowerCase() }));
   const back = lower.find(
     (x) => x.name.includes('back') || x.name.includes('rear')
@@ -92,20 +91,16 @@ const StaffScanner: React.FC = () => {
 
   // carica lista device video
   const loadDevices = useCallback(async (): Promise<MediaDeviceInfo[]> => {
-    // 1) prova a chiedere permesso per far apparire la lista device
     try {
       const tmp = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: { ideal: 'environment' } },
         audio: false,
       });
-      // stop immediato: ci serve solo per sbloccare enumerateDevices()
       tmp.getTracks().forEach((t) => t.stop());
     } catch (e) {
-      // Se l'utente aveva già negato in passato, qui può fallire.
-      // Continuiamo comunque: se non ci sono device, lo gestiamo dopo.
+      // continua comunque
     }
 
-    // 2) ora enumeriamo
     const devs = await BrowserQRCodeReader.listVideoInputDevices();
     setDevices(devs);
     const pick = pickBackCamera(devs);
@@ -122,10 +117,8 @@ const StaffScanner: React.FC = () => {
 
   useEffect(() => {
     if (!cameraOn) return;
-    // riavvia lo stream sul nuovo device
     (async () => {
       stopScan();
-      // piccola pausa per rilasciare le tracce
       setTimeout(() => {
         startScan();
       }, 50);
@@ -164,7 +157,6 @@ const StaffScanner: React.FC = () => {
           }
         );
       } else {
-        // ✅ Fallback: nessun device visibile? prova con constraints (prompt sicuro)
         controls = await readerRef.current.decodeFromConstraints(
           { video: { facingMode: { ideal: 'environment' } } },
           videoRef.current!,
@@ -189,11 +181,10 @@ const StaffScanner: React.FC = () => {
       controlsRef.current = controls;
       setCameraOn(true);
     } catch (err: any) {
-      // Messaggi utili per permessi negati o policy bloccante
       const msg = String(err?.message || err);
       if (/permission|denied/i.test(msg)) {
         alert(
-          'Permesso fotocamera negato. Tocca l’icona del lucchetto nella barra dell’URL e abilita la camera per questo sito.'
+          "Permesso fotocamera negato. Tocca l'icona del lucchetto nella barra dell'URL e abilita la camera per questo sito."
         );
       } else if (/notallowederror|notfounderror|overconstrained/i.test(msg)) {
         alert(
@@ -235,8 +226,6 @@ const StaffScanner: React.FC = () => {
     async (ev: React.ChangeEvent<HTMLInputElement>) => {
       const file = ev.target.files?.[0];
       if (!file) return;
-      // ZXing ha anche decodeFromImageUrl, ma qui decodifichiamo lato video: per semplicità
-      // creiamo un oggetto URL e usiamo decodeFromImageUrl()
       try {
         if (!readerRef.current) readerRef.current = new BrowserQRCodeReader();
         const url = URL.createObjectURL(file);
@@ -256,7 +245,7 @@ const StaffScanner: React.FC = () => {
       } catch {
         setResult({
           ok: false,
-          error: 'Impossibile leggere il QR dall’immagine',
+          error: "Impossibile leggere il QR dall'immagine",
         });
       }
     },
@@ -273,201 +262,506 @@ const StaffScanner: React.FC = () => {
 
   if (!authed) {
     return (
-      <div className='min-h-screen flex items-center justify-center p-6 bg-slate-900'>
-        <div className='w-full max-w-sm bg-white/10 backdrop-blur rounded-2xl p-6 border border-white/10'>
-          <h1 className='text-white text-2xl font-bold mb-4'>Staff Login</h1>
-          <input
-            type='password'
-            className='w-full px-3 py-2 rounded bg-white/10 text-white placeholder-white/50 border border-white/20 mb-2'
-            placeholder='Password staff'
-            value={staffKey}
-            onChange={(e) => setStaffKey(e.target.value)}
-          />
-          {loginErr && <p className='text-red-400 text-sm mb-2'>{loginErr}</p>}
-          <button
-            onClick={doLogin}
-            className='w-full py-2 rounded bg-emerald-500 text-white font-semibold hover:bg-emerald-600'
-          >
-            Entra
-          </button>
+      <div className='min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950'>
+        <div className='w-full max-w-md'>
+          {/* Glass card con sfondo sfumato */}
+          <div className='relative'>
+            <div className='absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20 blur-xl'></div>
+            <div className='relative bg-slate-800/40 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-slate-700/50'>
+              <div className='text-center mb-8'>
+                <div className='inline-flex p-3 rounded-2xl bg-gradient-to-tr from-blue-500/20 to-purple-500/20 mb-4'>
+                  <svg
+                    className='w-8 h-8 text-white'
+                    fill='none'
+                    stroke='currentColor'
+                    viewBox='0 0 24 24'
+                  >
+                    <path
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth={2}
+                      d='M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z'
+                    />
+                  </svg>
+                </div>
+                <h1 className='text-3xl font-bold text-white mb-2'>
+                  Staff Access
+                </h1>
+                <p className='text-slate-400 text-sm'>
+                  Inserisci le tue credenziali per accedere
+                </p>
+              </div>
+
+              <div className='space-y-4'>
+                <div>
+                  <input
+                    type='password'
+                    className='w-full px-4 py-3 rounded-xl bg-slate-900/50 text-white placeholder-slate-500 border border-slate-700/50 focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all'
+                    placeholder='Password staff'
+                    value={staffKey}
+                    onChange={(e) => setStaffKey(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && doLogin()}
+                  />
+                  {loginErr && (
+                    <p className='text-red-400 text-sm mt-2 flex items-center gap-1'>
+                      <svg
+                        className='w-4 h-4'
+                        fill='none'
+                        stroke='currentColor'
+                        viewBox='0 0 24 24'
+                      >
+                        <path
+                          strokeLinecap='round'
+                          strokeLinejoin='round'
+                          strokeWidth={2}
+                          d='M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
+                        />
+                      </svg>
+                      {loginErr}
+                    </p>
+                  )}
+                </div>
+
+                <button
+                  onClick={doLogin}
+                  className='w-full py-3 rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold hover:from-blue-600 hover:to-purple-600 transition-all duration-200 shadow-lg hover:shadow-xl'
+                >
+                  Accedi
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className='min-h-screen p-6 bg-slate-900 text-white'>
+    <div className='min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 pb-8'>
       <div
-        className='max-w-3xl mx-auto space-y-6'
-        style={{ marginTop: navbarHeight }}
+        className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'
+        style={{ paddingTop: navbarHeight + 24 }}
       >
-        <header className='flex items-center justify-between'>
-          <h1 className='text-2xl font-bold'>Staff Scanner</h1>
-          <div className='flex gap-3 items-center'>
-            {devices.length > 0 && (
-              <select
-                className='px-2 py-1 bg-white/10 rounded border border-white/20'
-                value={selectedDeviceId || ''}
-                onChange={(e) => setSelectedDeviceId(e.target.value || null)}
-              >
-                {devices.map((d) => (
-                  <option key={d.deviceId} value={d.deviceId}>
-                    {d.label || d.deviceId.slice(0, 8)}
-                  </option>
-                ))}
-              </select>
-            )}
-            {!cameraOn ? (
+        {/* Header migliorato */}
+        <header className='mb-8'>
+          <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
+            <div>
+              <h1 className='text-3xl sm:text-4xl font-bold text-white mb-2'>
+                QR Scanner
+              </h1>
+              <p className='text-slate-400'>
+                Sistema di validazione ticket staff
+              </p>
+            </div>
+
+            <div className='flex flex-wrap gap-3'>
+              {devices.length > 0 && (
+                <select
+                  className='px-4 py-2.5 bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 text-white focus:border-blue-500/50 focus:outline-none transition-all'
+                  value={selectedDeviceId || ''}
+                  onChange={(e) => setSelectedDeviceId(e.target.value || null)}
+                >
+                  {devices.map((d) => (
+                    <option key={d.deviceId} value={d.deviceId}>
+                      {d.label || `Camera ${d.deviceId.slice(0, 8)}`}
+                    </option>
+                  ))}
+                </select>
+              )}
+
               <button
-                onClick={startScan}
-                className='px-3 py-2 bg-cyan-500 rounded hover:bg-cyan-600'
+                onClick={doLogout}
+                className='px-4 py-2.5 bg-slate-800/50 backdrop-blur rounded-xl border border-red-500/30 text-red-400 hover:bg-red-500/10 hover:border-red-500/50 transition-all flex items-center gap-2'
               >
-                Apri Camera
+                <svg
+                  className='w-5 h-5'
+                  fill='none'
+                  stroke='currentColor'
+                  viewBox='0 0 24 24'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1'
+                  />
+                </svg>
+                <span className='hidden sm:inline'>Logout</span>
               </button>
-            ) : (
-              <button
-                onClick={stopScan}
-                className='px-3 py-2 bg-yellow-500 rounded hover:bg-yellow-600'
-              >
-                Chiudi Camera
-              </button>
-            )}
-            <button
-              onClick={doLogout}
-              className='px-3 py-2 bg-red-500 rounded hover:bg-red-600'
-            >
-              Logout
-            </button>
+            </div>
           </div>
         </header>
 
-        <section className='bg-white/5 rounded-2xl p-4 border border-white/10'>
-          <div className='flex flex-col md:flex-row gap-4'>
-            <div className='flex-1 space-y-3'>
-              <div className='flex gap-2'>
-                <button
-                  onClick={doPreviewManual}
-                  className='px-3 py-2 bg-emerald-500 rounded hover:bg-emerald-600'
-                >
-                  Preview manuale
-                </button>
-                <label className='px-3 py-2 bg-indigo-500 rounded hover:bg-indigo-600 cursor-pointer'>
-                  Carica immagine QR
-                  <input
-                    type='file'
-                    accept='image/*'
-                    capture='environment'
-                    className='hidden'
-                    onChange={onUploadImage}
-                  />
-                </label>
+        <div className='grid lg:grid-cols-2 gap-6'>
+          {/* Colonna sinistra - Scanner */}
+          <div className='space-y-6'>
+            {/* Camera Section */}
+            <div className='bg-slate-800/30 backdrop-blur rounded-2xl border border-slate-700/50 overflow-hidden'>
+              <div className='aspect-[4/3] relative bg-slate-950'>
+                <video
+                  ref={videoRef}
+                  className='w-full h-full object-cover'
+                  muted
+                  playsInline
+                  autoPlay
+                />
+                {!cameraOn && (
+                  <div className='absolute inset-0 flex items-center justify-center'>
+                    <div className='text-center'>
+                      <svg
+                        className='w-16 h-16 text-slate-600 mx-auto mb-4'
+                        fill='none'
+                        stroke='currentColor'
+                        viewBox='0 0 24 24'
+                      >
+                        <path
+                          strokeLinecap='round'
+                          strokeLinejoin='round'
+                          strokeWidth={1.5}
+                          d='M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 011-1h6a1 1 0 011 1v2a1 1 0 001 1h2m-5 0V4m0 0L9 4m3 0l3 0'
+                        />
+                      </svg>
+                      <p className='text-slate-500 mb-4'>Camera non attiva</p>
+                      <button
+                        onClick={startScan}
+                        className='px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-medium rounded-xl hover:from-blue-600 hover:to-purple-600 transition-all shadow-lg hover:shadow-xl'
+                      >
+                        Attiva Scanner
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {cameraOn && (
+                  <button
+                    onClick={stopScan}
+                    className='absolute top-4 right-4 px-4 py-2 bg-red-500/90 backdrop-blur text-white rounded-lg hover:bg-red-600 transition-all flex items-center gap-2'
+                  >
+                    <svg
+                      className='w-5 h-5'
+                      fill='none'
+                      stroke='currentColor'
+                      viewBox='0 0 24 24'
+                    >
+                      <path
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeWidth={2}
+                        d='M6 18L18 6M6 6l12 12'
+                      />
+                    </svg>
+                    Chiudi
+                  </button>
+                )}
               </div>
-              <textarea
-                className='w-full h-24 p-2 rounded bg-white/10 text-white placeholder-white/50 border border-white/20'
-                placeholder='Incolla qui JSON del QR ({"t":"...token..."}) o direttamente il token'
-                value={tokenInput}
-                onChange={(e) => setTokenInput(e.target.value)}
-              />
             </div>
 
-            <div className='w-full md:w-80 h-64 md:h-56'>
-              <video
-                ref={videoRef}
-                className='w-full h-full object-cover bg-black rounded-lg border border-white/10 block'
-                muted
-                playsInline
-                autoPlay
-              />
+            {/* Input Alternativo */}
+            <div className='bg-slate-800/30 backdrop-blur rounded-2xl border border-slate-700/50 p-6'>
+              <h3 className='text-white font-semibold mb-4 flex items-center gap-2'>
+                <svg
+                  className='w-5 h-5 text-slate-400'
+                  fill='none'
+                  stroke='currentColor'
+                  viewBox='0 0 24 24'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'
+                  />
+                </svg>
+                Inserimento Manuale
+              </h3>
+
+              <div className='space-y-4'>
+                <textarea
+                  className='w-full h-24 p-3 rounded-xl bg-slate-900/50 text-white placeholder-slate-500 border border-slate-700/50 focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all resize-none'
+                  placeholder='Incolla qui il token o il JSON del QR {"t":"..."}'
+                  value={tokenInput}
+                  onChange={(e) => setTokenInput(e.target.value)}
+                />
+
+                <div className='flex flex-col sm:flex-row gap-3'>
+                  <button
+                    onClick={doPreviewManual}
+                    className='flex-1 px-4 py-2.5 bg-slate-700/50 text-white rounded-xl hover:bg-slate-700/70 transition-all flex items-center justify-center gap-2'
+                  >
+                    <svg
+                      className='w-5 h-5'
+                      fill='none'
+                      stroke='currentColor'
+                      viewBox='0 0 24 24'
+                    >
+                      <path
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeWidth={2}
+                        d='M15 12a3 3 0 11-6 0 3 3 0 016 0z'
+                      />
+                      <path
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeWidth={2}
+                        d='M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z'
+                      />
+                    </svg>
+                    Preview
+                  </button>
+
+                  <label className='flex-1 px-4 py-2.5 bg-slate-700/50 text-white rounded-xl hover:bg-slate-700/70 transition-all flex items-center justify-center gap-2 cursor-pointer'>
+                    <svg
+                      className='w-5 h-5'
+                      fill='none'
+                      stroke='currentColor'
+                      viewBox='0 0 24 24'
+                    >
+                      <path
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeWidth={2}
+                        d='M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z'
+                      />
+                    </svg>
+                    Carica Immagine
+                    <input
+                      type='file'
+                      accept='image/*'
+                      capture='environment'
+                      className='hidden'
+                      onChange={onUploadImage}
+                    />
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
-        </section>
 
-        <section className='bg-white/5 rounded-2xl p-4 border border-white/10'>
-          {loading && <p className='text-white/80'>Verifica in corso…</p>}
-          {!loading &&
-            result &&
-            (result.ok ? (
-              <div className='space-y-2'>
-                <p className='text-white/80'>
-                  Modalità: <span className='font-semibold'>preview</span>
-                </p>
-                {result.score && (
-                  <div className='mt-2'>
-                    <h3 className='font-semibold text-lg'>Score</h3>
-                    <ul className='text-white/90 list-disc ml-5'>
-                      <li>
-                        <b>Email:</b> {result.score.email}
-                      </li>
-                      <li>
-                        <b>Gioco:</b> {result.score.game}
-                      </li>
-                      <li>
-                        <b>Difficoltà:</b> {result.score.difficulty}
-                      </li>
-                      <li>
-                        <b>Punteggio:</b> {result.score.score}
-                      </li>
-                      <li>
-                        <b>Redeemed:</b> {String(result.score.redeemed)}
-                      </li>
-                      <li>
-                        <b>Redeemed at:</b> {result.score.redeemed_at ?? '—'}
-                      </li>
-                      <li>
-                        <b>Creato:</b>{' '}
-                        {new Date(result.score.created_at).toLocaleString()}
-                      </li>
-                    </ul>
-                  </div>
-                )}
-                {result.player && (
-                  <div className='mt-2'>
-                    <h3 className='font-semibold text-lg'>Player</h3>
-                    <ul className='text-white/90 list-disc ml-5'>
-                      <li>
-                        <b>Email:</b> {result.player.email}
-                      </li>
-                      <li>
-                        <b>Submit count:</b> {result.player.submit_count}
-                      </li>
-                      <li>
-                        <b>Redeem count:</b> {result.player.redeem_count}
-                      </li>
-                      <li>
-                        <b>Aggiornato:</b>{' '}
-                        {new Date(result.player.updated_at).toLocaleString()}
-                      </li>
-                    </ul>
-                  </div>
-                )}
-                {result.score && !result.score.redeemed && lastToken && (
-                  <div className='pt-3'>
-                    <button
-                      onClick={onRedeem}
-                      className='px-4 py-2 rounded bg-lime-500 hover:bg-lime-600 font-semibold'
-                    >
-                      REDEEM
-                    </button>
-                  </div>
-                )}
-                {result.score && result.score.redeemed && (
-                  <p className='text-yellow-400 font-semibold mt-2'>
-                    ⚠️ Già riscattato
-                  </p>
-                )}
+          {/* Colonna destra - Risultati */}
+          <div className='bg-slate-800/30 backdrop-blur rounded-2xl border border-slate-700/50 p-6'>
+            <h3 className='text-white font-semibold mb-4 flex items-center gap-2'>
+              <svg
+                className='w-5 h-5 text-slate-400'
+                fill='none'
+                stroke='currentColor'
+                viewBox='0 0 24 24'
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={2}
+                  d='M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'
+                />
+              </svg>
+              Risultati Validazione
+            </h3>
+
+            {loading && (
+              <div className='flex items-center justify-center py-12'>
+                <div className='text-center'>
+                  <div className='inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4'></div>
+                  <p className='text-slate-400'>Verifica in corso...</p>
+                </div>
               </div>
-            ) : (
-              <p className='text-red-400'>
-                Errore: {result.error ?? 'Sconosciuto'}
-              </p>
-            ))}
-          {!loading && !result && (
-            <p className='text-white/60'>
-              Scansiona un QR, carica un’immagine o incolla il token per la
-              preview.
-            </p>
-          )}
-        </section>
+            )}
+
+            {!loading &&
+              result &&
+              (result.ok ? (
+                <div className='space-y-6'>
+                  {/* Status Badge */}
+                  <div className='flex items-center justify-between'>
+                    <span className='text-sm text-slate-400'>Modalità</span>
+                    <span className='px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-sm font-medium'>
+                      Preview
+                    </span>
+                  </div>
+
+                  {/* Score Info */}
+                  {result.score && (
+                    <div className='space-y-4'>
+                      <div className='bg-slate-900/50 rounded-xl p-4 space-y-3'>
+                        <h4 className='text-white font-medium mb-3'>
+                          Informazioni Ticket
+                        </h4>
+
+                        <div className='grid gap-3'>
+                          <div className='flex justify-between items-center py-2 border-b border-slate-700/50'>
+                            <span className='text-slate-400 text-sm'>
+                              Email
+                            </span>
+                            <span className='text-white text-sm font-medium'>
+                              {result.score.email}
+                            </span>
+                          </div>
+                          <div className='flex justify-between items-center py-2 border-b border-slate-700/50'>
+                            <span className='text-slate-400 text-sm'>
+                              Gioco
+                            </span>
+                            <span className='text-white text-sm font-medium'>
+                              {result.score.game}
+                            </span>
+                          </div>
+                          <div className='flex justify-between items-center py-2 border-b border-slate-700/50'>
+                            <span className='text-slate-400 text-sm'>
+                              Difficoltà
+                            </span>
+                            <span className='text-white text-sm font-medium'>
+                              {result.score.difficulty}
+                            </span>
+                          </div>
+                          <div className='flex justify-between items-center py-2 border-b border-slate-700/50'>
+                            <span className='text-slate-400 text-sm'>
+                              Punteggio
+                            </span>
+                            <span className='text-white text-sm font-medium'>
+                              {result.score.score}
+                            </span>
+                          </div>
+                          <div className='flex justify-between items-center py-2'>
+                            <span className='text-slate-400 text-sm'>
+                              Stato
+                            </span>
+                            {result.score.redeemed ? (
+                              <span className='px-3 py-1 bg-yellow-500/20 text-yellow-400 rounded-full text-xs font-medium'>
+                                Già Riscattato
+                              </span>
+                            ) : (
+                              <span className='px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-medium'>
+                                Disponibile
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Player Info */}
+                      {result.player && (
+                        <div className='bg-slate-900/50 rounded-xl p-4'>
+                          <h4 className='text-white font-medium mb-3'>
+                            Statistiche Giocatore
+                          </h4>
+                          <div className='grid grid-cols-2 gap-4'>
+                            <div className='text-center'>
+                              <p className='text-2xl font-bold text-white'>
+                                {result.player.submit_count}
+                              </p>
+                              <p className='text-xs text-slate-400'>
+                                Partite Giocate
+                              </p>
+                            </div>
+                            <div className='text-center'>
+                              <p className='text-2xl font-bold text-white'>
+                                {result.player.redeem_count}
+                              </p>
+                              <p className='text-xs text-slate-400'>
+                                Premi Riscattati
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Action Button */}
+                      {result.score && !result.score.redeemed && lastToken && (
+                        <button
+                          onClick={onRedeem}
+                          className='w-full py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2'
+                        >
+                          <svg
+                            className='w-5 h-5'
+                            fill='none'
+                            stroke='currentColor'
+                            viewBox='0 0 24 24'
+                          >
+                            <path
+                              strokeLinecap='round'
+                              strokeLinejoin='round'
+                              strokeWidth={2}
+                              d='M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'
+                            />
+                          </svg>
+                          Conferma Riscatto
+                        </button>
+                      )}
+
+                      {result.score && result.score.redeemed && (
+                        <div className='bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4'>
+                          <p className='text-yellow-400 text-sm flex items-center gap-2'>
+                            <svg
+                              className='w-5 h-5'
+                              fill='none'
+                              stroke='currentColor'
+                              viewBox='0 0 24 24'
+                            >
+                              <path
+                                strokeLinecap='round'
+                                strokeLinejoin='round'
+                                strokeWidth={2}
+                                d='M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z'
+                              />
+                            </svg>
+                            Questo ticket è già stato riscattato
+                          </p>
+                          {result.score.redeemed_at && (
+                            <p className='text-slate-500 text-xs mt-2'>
+                              Riscattato il:{' '}
+                              {new Date(
+                                result.score.redeemed_at
+                              ).toLocaleString()}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className='bg-red-500/10 border border-red-500/30 rounded-xl p-4'>
+                  <p className='text-red-400 flex items-center gap-2'>
+                    <svg
+                      className='w-5 h-5'
+                      fill='none'
+                      stroke='currentColor'
+                      viewBox='0 0 24 24'
+                    >
+                      <path
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeWidth={2}
+                        d='M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
+                      />
+                    </svg>
+                    {result.error || 'Errore sconosciuto'}
+                  </p>
+                </div>
+              ))}
+
+            {!loading && !result && (
+              <div className='flex items-center justify-center py-12'>
+                <div className='text-center'>
+                  <svg
+                    className='w-16 h-16 text-slate-600 mx-auto mb-4'
+                    fill='none'
+                    stroke='currentColor'
+                    viewBox='0 0 24 24'
+                  >
+                    <path
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth={1.5}
+                      d='M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 011-1h6a1 1 0 011 1v2a1 1 0 001 1h2m-5 0V4m0 0L9 4m3 0l3 0'
+                    />
+                  </svg>
+                  <p className='text-slate-500 mb-2'>Nessun QR scansionato</p>
+                  <p className='text-slate-600 text-sm'>
+                    Usa lo scanner, carica un'immagine o incolla un token
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
