@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import type { GameKey, Difficulty } from 'types/games.type.ts';
 import { submitScoreWithEmail } from '@utils/score-submit.utils.ts';
+import { PATH_PRIVACY, PATH_TERMS } from '@utils/navigate.utils';
 
 interface ScoreFormProps {
   game: GameKey;
@@ -32,8 +33,8 @@ const ScoreForm: React.FC<ScoreFormProps> = ({
   score,
   onReplay,
   onExit,
-  termsUrl = '/terms',
-  privacyUrl = '/privacy',
+  termsUrl = PATH_TERMS,
+  privacyUrl = PATH_PRIVACY,
   submitLabel = 'Salva punteggio',
   replayLabel = 'Rigioca',
   exitLabel = 'Menu principale',

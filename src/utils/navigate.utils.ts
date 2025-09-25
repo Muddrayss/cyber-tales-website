@@ -8,6 +8,8 @@ export const PATH_MUSIC = `${PATH_HOME}music/`;
 export const PATH_CREDITS = `${PATH_HOME}credits/`;
 export const PATH_STAFF_SCANNER = `${PATH_HOME}staff-scanner/`;
 export const PATH_NOT_FOUND = `${PATH_HOME}not-found/`;
+export const PATH_TERMS = `${PATH_HOME}terms/`;
+export const PATH_PRIVACY = `${PATH_HOME}privacy/`;
 
 export const navigateToHome = (navigator: NavigateFunction) => {
   navigator(PATH_HOME);
@@ -51,3 +53,12 @@ export const pathUserGate = (ret?: string) =>
 
 export const pathSubmitScore = (opts: { game: string; difficulty: string; score: number }) =>
   `${PATH_MINIGAMES}submit-score?game=${encodeURIComponent(opts.game)}&difficulty=${encodeURIComponent(opts.difficulty)}&score=${encodeURIComponent(String(opts.score))}`;
+
+
+export const navigateToTerms = (navigator: NavigateFunction) => {
+  navigator(PATH_TERMS);
+};
+
+export const navigateToPrivacy = (navigator: NavigateFunction) => {
+  navigator(PATH_PRIVACY);
+};

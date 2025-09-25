@@ -206,6 +206,21 @@ const StaffScanner: React.FC = () => {
 
   useEffect(() => () => stopScan(), [stopScan]);
 
+  useEffect(() => {
+    if (result) {
+      // Wait for DOM to update
+      setTimeout(() => {
+        const resultElement = document.getElementById('result-section');
+        if (resultElement) {
+          resultElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          });
+        }
+      }, 100);
+    }
+  }, [result]);
+
   // preview manuale (incolla)
   const [tokenInput, setTokenInput] = useState('');
   const doPreviewManual = useCallback(async () => {
@@ -538,7 +553,10 @@ const StaffScanner: React.FC = () => {
           </div>
 
           {/* Colonna destra - Risultati */}
-          <div className='bg-slate-800/30 backdrop-blur rounded-2xl border border-slate-700/50 p-6'>
+          <div
+            className='bg-slate-800/30 backdrop-blur rounded-2xl border border-slate-700/50 p-6'
+            id='result-section'
+          >
             <h3 className='text-white font-semibold mb-4 flex items-center gap-2'>
               <svg
                 className='w-5 h-5 text-slate-400'

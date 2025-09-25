@@ -13,6 +13,8 @@ import StaffScanner from './screens/staff-scanner.screen';
 import ManualScreen from './screens/manual.screen';
 import Credits from './screens/credits.screen';
 import Music from './screens/music.screen';
+import TermsScreen from './screens/terms.screen';
+import PrivacyScreen from './screens/privacy.screen';
 
 import './App.css';
 
@@ -34,6 +36,8 @@ function App() {
         <Route path='/music' element={<Music />} />
         <Route path='/staff-scanner' element={<StaffScanner />} />
         <Route path='/credits' element={<Credits />} />
+        <Route path='/terms' element={<TermsScreen />} />
+        <Route path='/privacy' element={<PrivacyScreen />} />
       </Route>
     </Routes>
   );
